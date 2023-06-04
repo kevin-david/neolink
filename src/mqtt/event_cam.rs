@@ -20,7 +20,9 @@ pub(crate) enum Messages {
     MotionStart,
     Reboot,
     FloodlightOn,
+    FloodlightManualOnSeconds(u16),
     FloodlightOff,
+    FloodlightManualOffSeconds(u16),
     StatusLedOn,
     StatusLedOff,
     IRLedOn,
@@ -355,6 +357,10 @@ struct MessageHandler<'a> {
 
 impl<'a> MessageHandler<'a> {
     async fn listen(&mut self) -> Result<()> {
+        // Default values to turn on/off floodlight when a manual event is received
+        let mut floodlight_on_seconds: u16 = 180;
+        let mut floodlight_off_seconds: u16 = 180;
+
         loop {
             tokio::task::yield_now().await;
             match self.rx.recv().await {
@@ -373,8 +379,21 @@ impl<'a> MessageHandler<'a> {
                                 "OK".to_string()
                             }
                         }
+                        Messages::FloodlightManualOnSeconds(on_seconds) => {
+                            floodlight_on_seconds = on_seconds;
+                            debug!("Floodlight on seconds set to {}", floodlight_on_seconds);
+                            floodlight_on_seconds.to_string()
+                        }
                         Messages::FloodlightOn => {
-                            let res = self.camera.set_floodlight_manual(true, 180).await;
+                            debug!(
+                                "Turning on floodlight manual for {} seconds",
+                                floodlight_on_seconds
+                            );
+
+                            let res = self
+                                .camera
+                                .set_floodlight_manual(true, floodlight_on_seconds)
+                                .await;
                             if res.is_err() {
                                 error = Some(format!(
                                     "Failed to turn on the floodlight light: {:?}",
@@ -385,8 +404,21 @@ impl<'a> MessageHandler<'a> {
                                 "OK".to_string()
                             }
                         }
+                        Messages::FloodlightManualOffSeconds(off_seconds) => {
+                            floodlight_off_seconds = off_seconds;
+                            debug!("Floodlight off seconds set to {}", floodlight_off_seconds);
+                            floodlight_off_seconds.to_string()
+                        }
                         Messages::FloodlightOff => {
-                            let res = self.camera.set_floodlight_manual(false, 180).await;
+                            debug!(
+                                "Turning off floodlight manual for {} seconds",
+                                floodlight_off_seconds
+                            );
+
+                            let res = self
+                                .camera
+                                .set_floodlight_manual(false, floodlight_off_seconds)
+                                .await;
                             if res.is_err() {
                                 error = Some(format!(
                                     "Failed to turn off the floodlight light: {:?}",

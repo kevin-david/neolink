@@ -174,6 +174,8 @@ async fn listen_on_camera(cam_config: Arc<CameraConfig>, mqtt_config: &MqttConfi
                     if let Some(discovery_config) = &mqtt_config.discovery {
                         enable_discovery(discovery_config, &mqtt_sender_cam, &cam_config).await?;
                     }
+
+                    // TODO read from neolink/<camera>/status/floodlight/on_seconds and neolink/<camera>/status/floodlight/off_seconds
                 }
                 Messages::FloodlightOn => {
                     mqtt_sender_cam
@@ -360,6 +362,25 @@ async fn handle_mqtt_message(
             );
         }
         MqttReplyRef {
+            topic: "control/floodlight/on_seconds",
+            message,
+        } => {
+            let seconds = message.parse::<u16>().with_context(|| {
+                format!(
+                    "Failed to parse floodlight on seconds {} as a number",
+                    message
+                )
+            })?;
+
+            reply = Some(
+                event_cam_sender
+                    .send_message_with_reply(Messages::FloodlightManualOnSeconds(seconds))
+                    .await
+                    .with_context(|| "Failed to set camera floodlight manual on seconds")?,
+            );
+            reply_topic = Some("status/floodlight/on_seconds");
+        }
+        MqttReplyRef {
             topic: "control/floodlight",
             message: "off",
         } => {
@@ -369,6 +390,25 @@ async fn handle_mqtt_message(
                     .await
                     .with_context(|| "Failed to set camera status light off")?,
             );
+        }
+        MqttReplyRef {
+            topic: "control/floodlight/off_seconds",
+            message,
+        } => {
+            let seconds = message.parse::<u16>().with_context(|| {
+                format!(
+                    "Failed to parse floodlight off seconds {} as a number",
+                    message
+                )
+            })?;
+
+            reply = Some(
+                event_cam_sender
+                    .send_message_with_reply(Messages::FloodlightManualOffSeconds(seconds))
+                    .await
+                    .with_context(|| "Failed to set camera floodlight manual off seconds")?,
+            );
+            reply_topic = Some("status/floodlight/off_seconds");
         }
         MqttReplyRef {
             topic: "control/led",
