@@ -642,7 +642,7 @@ async fn handle_mqtt_message(
             let res = camera
                 .run_task(|cam| {
                     Box::pin(async move {
-                        cam.set_floodlight_manual(true, 180).await?;
+                        cam.set_floodlight_manual(true, 300).await?;
                         AnyResult::Ok(())
                     })
                 })
@@ -665,7 +665,7 @@ async fn handle_mqtt_message(
             let res = camera
                 .run_task(|cam| {
                     Box::pin(async move {
-                        cam.set_floodlight_manual(false, 180).await?;
+                        cam.set_floodlight_manual(false, 120).await?;
                         AnyResult::Ok(())
                     })
                 })
