@@ -27,7 +27,10 @@ impl BcCamera {
         sub_get.send(get).await?;
         let msg = sub_get.recv().await?;
         if msg.meta.response_code != 200 {
-            return Err(Error::CameraServiceUnavaliable(msg.meta.response_code));
+            return Err(Error::CameraServiceUnavailable {
+                id: msg.meta.msg_id,
+                code: msg.meta.response_code,
+            });
         }
 
         if let BcBody::ModernMsg(ModernMsg {

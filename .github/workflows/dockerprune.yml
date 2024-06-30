@@ -14,8 +14,8 @@ jobs:
         uses: fkirc/skip-duplicate-actions@v5
         with:
           # All of these options are optional, so you can remove them if you are happy with the defaults
-          concurrent_skipping: 'same_content_newer'
-          skip_after_successful_duplicate: 'false'
+          concurrent_skipping: "same_content_newer"
+          skip_after_successful_duplicate: "false"
 
   native:
     needs: pre_job
@@ -27,21 +27,21 @@ jobs:
         id: vars
         shell: bash
         run: |
-            unset HAS_SECRET
-            if [ -n $SECRET ]; then HAS_SECRET='true' ; fi
-            echo "HAS_SECRET_TOKEN=${HAS_SECRET}" >> $GITHUB_OUTPUT
+          unset HAS_SECRET
+          if [ -n $SECRET ]; then HAS_SECRET='true' ; fi
+          echo "HAS_SECRET_TOKEN=${HAS_SECRET}" >> $GITHUB_OUTPUT
         env:
           SECRET: "${{ secrets.DOCKER_PRUNE_TOKEN }}"
       - name: Convert username to lower case for docker
         id: string_user
         if: ${{ steps.vars.outputs.HAS_SECRET_TOKEN }}
-        uses: ASzc/change-string-case-action@v5
+        uses: ASzc/change-string-case-action@v6
         with:
           string: ${{ github.repository_owner }}
       - name: Convert repo to lower case for docker
         id: string_repo
         if: ${{ steps.vars.outputs.HAS_SECRET_TOKEN }}
-        uses: ASzc/change-string-case-action@v5
+        uses: ASzc/change-string-case-action@v6
         with:
           string: ${{ github.event.repository.name }}
       - name: Run Clean Script

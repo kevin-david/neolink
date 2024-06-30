@@ -30,7 +30,10 @@ impl BcCamera {
         sub_get.send(get).await?;
         let msg = sub_get.recv().await?;
         if msg.meta.response_code != 200 {
-            return Err(Error::CameraServiceUnavaliable(msg.meta.response_code));
+            return Err(Error::CameraServiceUnavailable {
+                id: msg.meta.msg_id,
+                code: msg.meta.response_code,
+            });
         }
 
         if let BcBody::ModernMsg(ModernMsg {
@@ -54,8 +57,9 @@ impl BcCamera {
     /// Populate ability list of the camera
     pub async fn polulate_abilities(&self) -> Result<()> {
         let info = self.get_abilityinfo().await?;
-        let info_res = yaserde::ser::serialize_with_writer(&info, vec![], &Default::default());
-        if let Ok(Ok(info_str)) = info_res.map(String::from_utf8) {
+        let mut ser_buf = bytes::BytesMut::new();
+        let info_res = quick_xml::se::to_writer(&mut ser_buf, &info).map(|_| ser_buf);
+        if let Ok(Ok(info_str)) = info_res.map(|b| std::str::from_utf8(&b).map(|a| a.to_owned())) {
             debug!("Abilities: {}", info_str);
         }
 

@@ -7,7 +7,7 @@ use std::convert::TryInto;
 pub struct Credentials {
     /// The username to login to the camera with
     pub username: String,
-    /// The password to use for login. Some camera allow this to be ommited
+    /// The password to use for login. Some camera allow this to be omitted
     pub password: Option<String>,
 }
 

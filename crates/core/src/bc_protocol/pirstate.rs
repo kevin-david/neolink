@@ -39,10 +39,16 @@ impl BcCamera {
                     reties += 1;
                     continue;
                 } else {
-                    return Err(Error::CameraServiceUnavaliable(msg.meta.response_code));
+                    return Err(Error::CameraServiceUnavailable {
+                        id: msg.meta.msg_id,
+                        code: msg.meta.response_code,
+                    });
                 }
             } else if msg.meta.response_code != 200 {
-                return Err(Error::CameraServiceUnavaliable(msg.meta.response_code));
+                return Err(Error::CameraServiceUnavailable {
+                    id: msg.meta.msg_id,
+                    code: msg.meta.response_code,
+                });
             } else {
                 // Valid message with response_code == 200
                 if let BcBody::ModernMsg(ModernMsg {
@@ -97,11 +103,14 @@ impl BcCamera {
 
         sub_set.send(get).await?;
         if let Ok(reply) =
-            tokio::time::timeout(tokio::time::Duration::from_micros(500), sub_set.recv()).await
+            tokio::time::timeout(tokio::time::Duration::from_millis(500), sub_set.recv()).await
         {
             let msg = reply?;
             if msg.meta.response_code != 200 {
-                return Err(Error::CameraServiceUnavaliable(msg.meta.response_code));
+                return Err(Error::CameraServiceUnavailable {
+                    id: msg.meta.msg_id,
+                    code: msg.meta.response_code,
+                });
             }
 
             if let BcMeta {

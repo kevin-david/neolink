@@ -368,10 +368,10 @@ impl UdpPayloadInner {
                                         written?;
                                     }
                                     Err(_) => {
+                                        log::trace!("Socket Error, attempting reconnect over a new one");
                                         // Socket is (maybe) broken
                                         // Seems to happen with network reconnects like over
                                         // a lossy cellular network
-                                        log::debug!("Quick reconnect: Due to socket timeout");
                                         let stream = Arc::new(tokio::time::timeout(tokio::time::Duration::from_millis(250), connect_try_port(inner.inner.get_ref().local_addr()?.port())).await.map_err(|_| Error::DroppedConnection)??);
                                         inner = tokio::time::timeout(tokio::time::Duration::from_millis(250), BcUdpSource::new_from_socket(stream, inner.addr)).await.map_err(|_| Error::DroppedConnection)??;
 
@@ -384,13 +384,10 @@ impl UdpPayloadInner {
                                                 let mut rng = thread_rng();
                                                 (rng.gen::<u8>()) as u32
                                             },
-                                            payload: UdpXml {
-                                                c2d_hb: Some(C2dHb {
+                                            payload: UdpXml::C2dHb(C2dHb {
                                                     cid: thread_client_id,
                                                     did: thread_camera_id,
                                                 }),
-                                                ..Default::default()
-                                            },
                                         });
                                         let _ = tokio::time::timeout(tokio::time::Duration::from_millis(250), inner.send((msg, thread_camera_addr))).await;
                                     }
@@ -404,7 +401,6 @@ impl UdpPayloadInner {
                     Ok(())
                 } => v,
             };
-            log::debug!("UdpPayloadInner::new SendToSocket Cancel: {:?}", result);
             send_cancel.cancel();
             result
         });
@@ -449,13 +445,10 @@ impl UdpPayloadInner {
                                 let mut rng = thread_rng();
                                 (rng.gen::<u8>()) as u32
                             },
-                            payload: UdpXml {
-                                c2d_hb: Some(C2dHb {
+                            payload: UdpXml::C2dHb(C2dHb {
                                     cid: thread_client_id,
                                     did: thread_camera_id,
                                 }),
-                                ..Default::default()
-                            },
                         });
                         if thread_sender.send(msg).await.is_err() {
                             break Result::Ok(());
@@ -526,6 +519,20 @@ impl UdpPayloadInner {
                 let (item, addr) = v.ok_or(Error::DroppedConnection)?;
                 if addr == camera_addr {
                     match item {
+                        BcUdp::Discovery(UdpDiscovery{
+                            payload: UdpXml::D2cHb(D2cHb {
+                                cid,
+                                did,
+                            }),
+                            ..
+                        }) => {
+                            if cid != self.client_id {
+                                log::info!("Camera sent different client ID in HB");
+                            }
+                            if did != self.camera_id {
+                                log::info!("Camera sent different device ID in HB");
+                            }
+                        },
                         BcUdp::Discovery(_disc) => {},
                         BcUdp::Ack(ack) => {
                             if ack.connection_id == self.client_id {
@@ -554,6 +561,7 @@ impl UdpPayloadInner {
             self.packets_want += 1;
             self.thread_stream.feed(Ok(payload)).await?;
         }
+        log::trace!("recieved: {}", self.recieved.len());
         log::trace!("Flush");
         self.socket_in.flush().await?;
         self.thread_stream.flush().await?;
@@ -611,6 +619,7 @@ impl UdpPayloadInner {
             }
         }
         self.ack_latency.feed_ack();
+        log::trace!("sent: {}", self.sent.len());
     }
 }
 

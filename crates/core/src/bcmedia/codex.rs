@@ -39,7 +39,7 @@ impl Decoder for BcMediaCodex {
     type Item = BcMedia;
     type Error = Error;
 
-    /// Since frames can cross EOF boundaries we overload this so it dosen't error if
+    /// Since frames can cross EOF boundaries we overload this so it doesn't error if
     /// there are bytes left on the stream
     fn decode_eof(&mut self, buf: &mut BytesMut) -> Result<Option<Self::Item>> {
         match self.decode(buf)? {
@@ -50,17 +50,17 @@ impl Decoder for BcMediaCodex {
 
     fn decode(&mut self, src: &mut BytesMut) -> Result<Option<Self::Item>> {
         loop {
-            match { BcMedia::deserialize(src) } {
+            match BcMedia::deserialize(src) {
                 Ok(bc) => {
                     if self.amount_skipped > 0 {
-                        debug!("Amount skipped to restore stream: {}", self.amount_skipped);
+                        trace!("Amount skipped to restore stream: {}", self.amount_skipped);
                         self.amount_skipped = 0;
                     }
                     return Ok(Some(bc));
                 }
                 Err(Error::NomIncomplete(_)) => {
                     if self.amount_skipped > 0 {
-                        debug!("Amount skipped to restore stream: {}", self.amount_skipped);
+                        trace!("Amount skipped to restore stream: {}", self.amount_skipped);
                         self.amount_skipped = 0;
                     }
                     return Ok(None);

@@ -33,7 +33,7 @@ features not yet in upstream master.
 **Minor Features**:
 
 - Improved error messages when missing gstreamer plugins
-- Protocol more closely follows offical reolink format
+- Protocol more closely follows official reolink format
   - Possibly can handle more simulatenous connections
 - More ways to connect to the camera. Including Relaying through reolink
 servers
@@ -50,7 +50,7 @@ Install the latest [gstreamer](https://gstreamer.freedesktop.org/download/)
 (1.20.5 as of writing this).
 
 - **Windows**: ensure you install `full` when prompted in the MSI options.
-- **Mac**: Install the dpkg version on the offical gstreamer website over
+- **Mac**: Install the dpkg version on the official gstreamer website over
   the brew version
 - **Ubuntu/Debian**: These packages should work
 
@@ -269,7 +269,7 @@ reflected in the rtsp
 
 These include changing the:
 
-- Avaliable users
+- Available users
 
 ```toml
 [[users]]
@@ -284,7 +284,7 @@ These include changing the:
   permitted_users = [ "me" ]
 ```
 
-- Avaliable streams
+- Available streams
 
 ```toml
 [[cameras]]
@@ -324,7 +324,7 @@ enable_motion = false        # motion detection
                              # (limited battery drain since it
                              # is a passive listening connection)
                              #
-enable_light = false         # flood lights only avaliable on some camera
+enable_light = false         # flood lights only available on some camera
                              # (limited battery drain since it
                              # is a passive listening connection)
                              #
@@ -355,7 +355,7 @@ must be manually specified.
   features = ["floodlight"]
 ```
 
-Avaliable features are:
+Available features are:
 
 - `floodlight`: This adds a light control to home assistant
 - `camera`: This adds a camera preview to home assistant. It is only updated
@@ -456,6 +456,10 @@ docker pull quantumentangledandy/neolink
 # network=host, notably macos lacks this option.
 docker run --network host --volume=$PWD/config.toml:/etc/neolink.toml quantumentangledandy/neolink
 ```
+#### Environmental Variables 
+There are currently 2 environmental variables available as part of the container: 
+- `NEO_LINK_MODE`: defaults to `"rtsp"` if not set, other options are "mqtt" or "mqtt-rtsp".
+- `NEO_LINK_PORT`: defaults to `8554`, set this to your required port value.
 
 ### Image
 

@@ -23,7 +23,6 @@ pub(crate) use cmdline::Opt;
 /// Opt is the command line options
 pub(crate) async fn main(opt: Opt, reactor: NeoReactor) -> Result<()> {
     let camera = reactor.get(&opt.camera).await?;
-    log::debug!("Battery: Instance aquired");
 
     let state = camera
         .run_task(|cam| {
@@ -35,10 +34,11 @@ pub(crate) async fn main(opt: Opt, reactor: NeoReactor) -> Result<()> {
         })
         .await?;
 
-    let ser = String::from_utf8(
-        yaserde::ser::serialize_with_writer(&state, vec![], &Default::default())
-            .expect("Should Ser the struct"),
-    )
+    let ser = String::from_utf8({
+        let mut buf = bytes::BytesMut::new();
+        quick_xml::se::to_writer(&mut buf, &state).expect("Should Ser the struct");
+        buf.to_vec()
+    })
     .expect("Should be UTF8");
     println!("{}", ser);
 

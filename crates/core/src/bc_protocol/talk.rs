@@ -323,7 +323,7 @@ impl BcCamera {
 
         let full_block_size = block_size + 4; // Block size + predictor state
         let msg_num = self.new_message_num();
-        let sub = connection.subscribe(MSG_ID_TALK, msg_num).await?;
+        let mut sub = connection.subscribe(MSG_ID_TALK, msg_num).await?;
 
         const BLOCK_PER_PAYLOAD: usize = 1;
         const BLOCK_HEADER_SIZE: usize = 4;
@@ -333,9 +333,10 @@ impl BcCamera {
 
         let target_chunks = full_block_size as usize * BLOCK_PER_PAYLOAD;
 
-        let mut payload_bytes = vec![];
         let mut end_of_stream = false;
+        let mut expected_stream_end = std::time::Instant::now();
         while !end_of_stream {
+            let mut payload_bytes = vec![];
             while payload_bytes.len() < target_chunks {
                 let mut buffer = vec![255; target_chunks - payload_bytes.len()];
                 if let Ok(read) = buffered_recv.read(&mut buffer) {
@@ -373,8 +374,6 @@ impl BcCamera {
                 break;
             };
 
-            payload_bytes = vec![];
-
             // Time to play the sample in seconds
             let play_length = samples_sent as f32 / sample_rate as f32;
 
@@ -397,10 +396,21 @@ impl BcCamera {
                 }),
             };
 
+            let time_sent = std::time::Instant::now();
             sub.send(msg).await?;
-
-            std::thread::sleep(std::time::Duration::from_secs_f32(play_length * 0.95));
+            let play_length = std::time::Duration::from_secs_f32(play_length);
+            if time_sent > expected_stream_end {
+                expected_stream_end = time_sent + play_length;
+            } else {
+                expected_stream_end += play_length;
+            }
+            let _ = sub.recv().await?;
         }
+
+        // Chunks are still being played, while talk_stop will interrupt them. Wait until we expect
+        // the stream to end (+ and extra 100ms) before issuing talk_stop.
+        let remaining_stream_duration = expected_stream_end - std::time::Instant::now();
+        std::thread::sleep(remaining_stream_duration + std::time::Duration::from_secs_f32(0.1));
 
         self.talk_stop().await?;
 

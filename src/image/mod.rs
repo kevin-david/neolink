@@ -47,8 +47,7 @@ pub(crate) async fn main(opt: Opt, reactor: NeoReactor) -> Result<()> {
         let vid_type = stream_config
             .wait_for(|config| config.vid_ready())
             .await?
-            .vid_format
-            .clone();
+            .vid_format;
         let mut stream = BroadcastStream::new(stream_data.vid.resubscribe())
             .filter(|f| futures::future::ready(f.is_ok())); // Filter to ignore lagged
         let buf = loop {

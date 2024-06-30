@@ -30,6 +30,7 @@ mod ptz;
 mod pushinfo;
 mod reboot;
 mod resolution;
+mod services;
 mod siren;
 mod snap;
 mod stream;
@@ -194,7 +195,7 @@ impl BcCamera {
                 DiscoveryMethods::Map => (true, true, true, false),
                 DiscoveryMethods::Relay => (true, true, true, true),
                 DiscoveryMethods::Cellular => (false, false, true, true),
-                DiscoveryMethods::Debug => (false, false, false, true),
+                DiscoveryMethods::Debug => (false, false, true, false),
             };
 
             let res = tokio::select! {

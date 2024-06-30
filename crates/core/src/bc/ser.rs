@@ -1,6 +1,4 @@
 use super::model::*;
-use super::xml::BcPayloads;
-use super::xml_crypto;
 use cookie_factory::bytes::*;
 use cookie_factory::sequence::tuple;
 use cookie_factory::{combinator::*, gen};
@@ -80,7 +78,7 @@ fn bc_ext<W: Write>(
     encryption_protocol: &EncryptionProtocol,
 ) -> impl SerializeFn<W> {
     let xml_bytes = xml.serialize(vec![]).unwrap();
-    let enc_bytes = xml_crypto::encrypt(enc_offset, &xml_bytes, encryption_protocol);
+    let enc_bytes = encryption_protocol.encrypt(enc_offset, &xml_bytes);
     slice(enc_bytes)
 }
 
@@ -92,7 +90,11 @@ fn bc_payload<W: Write>(
     let payload_bytes = match payload {
         BcPayloads::BcXml(x) => {
             let xml_bytes = x.serialize(vec![]).unwrap();
-            xml_crypto::encrypt(enc_offset, &xml_bytes, encryption_protocol)
+            // log::debug!(
+            //     "Seialised as: {:?}",
+            //     std::str::from_utf8(xml_bytes.as_ref())
+            // );
+            encryption_protocol.encrypt(enc_offset, &xml_bytes)
         }
         BcPayloads::Binary(x) => x.to_owned(),
     };

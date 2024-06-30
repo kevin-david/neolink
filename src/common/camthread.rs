@@ -49,11 +49,9 @@ impl NeoCamThread {
         // Now we wait for a disconnect
         tokio::select! {
             _ = cancel_check.cancelled() => {
-                log::debug!("{name}: Camera Cancelled");
                 AnyResult::Ok(())
             }
             v = camera.join() => {
-                log::debug!("{name}: Camera Join: {:?}", v);
                 v?;
                 Ok(())
             },
@@ -76,7 +74,7 @@ impl NeoCamThread {
                         },
                         Err(_) => {
                             // Timeout
-                            if missed_pings > 5 {
+                            if missed_pings < 5 {
                                 missed_pings += 1;
                                 continue;
                             } else {
@@ -152,7 +150,6 @@ impl NeoCamThread {
             match result {
                 Ok(()) => {
                     // Normal shutdown
-                    log::debug!("Cancel:: NeoCamThread::NormalShutdown");
                     self.cancel.cancel();
                     return Ok(());
                 }
@@ -164,7 +161,6 @@ impl NeoCamThread {
                         Some(neolink_core::Error::CameraLoginFail) => {
                             // Fatal
                             log::error!("{name}: Login credentials were not accepted");
-                            log::debug!("NeoCamThread::run Login Cancel");
                             self.cancel.cancel();
                             return Err(e);
                         }
@@ -184,7 +180,6 @@ impl NeoCamThread {
 
 impl Drop for NeoCamThread {
     fn drop(&mut self) {
-        log::debug!("Cancel:: NeoCamThread::drop");
         self.cancel.cancel();
     }
 }

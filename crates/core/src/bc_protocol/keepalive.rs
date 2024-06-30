@@ -2,7 +2,7 @@ use super::{BcCamera, Result};
 use crate::bc::model::*;
 
 impl BcCamera {
-    /// Create a handller to respond to keep alive messages
+    /// Create a handler to respond to keep alive messages
     /// These messages are sent by the camera so we listen to
     /// a message ID rather than setting a message number and
     /// responding to it

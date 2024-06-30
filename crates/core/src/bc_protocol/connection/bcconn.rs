@@ -178,7 +178,6 @@ impl BcConnection {
 
     pub async fn shutdown(&self) -> Result<()> {
         let _ = self.poll_commander.send(PollCommand::Disconnect).await;
-        log::debug!("BcConnection::shutdown Cancel");
         self.cancel.cancel();
         let mut locked_threads = self.rx_thread.write().await;
         while locked_threads.join_next().await.is_some() {}
@@ -196,7 +195,6 @@ impl Drop for BcConnection {
         let mut threads = std::mem::take(&mut self.rx_thread);
         tokio::task::spawn(async move {
             let _ = poll_commander.send(PollCommand::Disconnect).await;
-            log::debug!("BcConnection::shutdown Cancel");
             let locked_threads = threads.get_mut();
             while locked_threads.join_next().await.is_some() {}
             log::trace!("Dropped BcConnection");
@@ -331,17 +329,19 @@ impl Poller {
                                         }
                                         let _ = sender.send(Ok(response)).await;
                                     } else {
-                                        debug!(
+                                        trace!(
                                             "Ignoring uninteresting message id {} (number: {})",
-                                            msg_id, msg_num
+                                            msg_id,
+                                            msg_num
                                         );
                                         trace!("Contents: {:?}", response);
                                     }
                                 }
                                 (None, None) => {
-                                    debug!(
+                                    trace!(
                                         "Ignoring uninteresting message id {} (number: {})",
-                                        msg_id, msg_num
+                                        msg_id,
+                                        msg_num
                                     );
                                     trace!("Contents: {:?}", response);
                                 }

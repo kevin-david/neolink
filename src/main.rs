@@ -20,7 +20,7 @@
 //! You should have received a copy of the GNU General Public License along with this program. If
 //! not, see <https://www.gnu.org/licenses/>.
 //!
-//! Neolink source code is available online at <https://github.com/thirtythreeforty/neolink>
+//! Neolink source code is available online at <https://github.com/QuantumEntangledAndy/neolink>
 //!
 #[cfg(not(target_env = "msvc"))]
 use tikv_jemallocator::Jemalloc;
@@ -46,6 +46,7 @@ mod pir;
 mod ptz;
 mod reboot;
 mod rtsp;
+mod services;
 mod statusled;
 mod talk;
 mod utils;
@@ -53,20 +54,8 @@ mod utils;
 use cmdline::{Command, Opt};
 use common::NeoReactor;
 use config::Config;
-use console_subscriber as _;
 
 pub(crate) type AnyResult<T> = Result<T, anyhow::Error>;
-
-#[cfg(tokio_unstable)]
-fn tokio_console_enable() {
-    info!("Tokio Console Enabled");
-    console_subscriber::init();
-}
-
-#[cfg(not(tokio_unstable))]
-fn tokio_console_enable() {
-    debug!("Tokio Console Disabled");
-}
 
 #[tokio::main]
 async fn main() -> Result<()> {
@@ -91,17 +80,13 @@ async fn main() -> Result<()> {
         .validate()
         .with_context(|| format!("Failed to validate the {:?} config file", conf_path))?;
 
-    if config.tokio_console {
-        tokio_console_enable();
-    }
-
     let neo_reactor = NeoReactor::new(config.clone()).await;
 
     match opt.cmd {
         None => {
             warn!(
                 "Deprecated command line option. Please use: `neolink rtsp --config={:?}`",
-                config
+                conf_path
             );
             rtsp::main(rtsp::Opt {}, neo_reactor.clone()).await?;
         }
@@ -137,6 +122,9 @@ async fn main() -> Result<()> {
         }
         Some(Command::Battery(opts)) => {
             battery::main(opts, neo_reactor.clone()).await?;
+        }
+        Some(Command::Services(opts)) => {
+            services::main(opts, neo_reactor.clone()).await?;
         }
     }
 

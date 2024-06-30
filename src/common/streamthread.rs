@@ -185,7 +185,6 @@ impl NeoCamStreamThread {
 
 impl Drop for NeoCamStreamThread {
     fn drop(&mut self) {
-        log::debug!("NeoCamStreamThread::drop Cancel");
         self.cancel.cancel();
         for stream in self.streams.values() {
             stream.cancel.cancel()
@@ -238,13 +237,13 @@ pub(crate) struct StreamData {
     users: UseCounter,
 }
 
-#[derive(Eq, PartialEq, Clone, Debug)]
+#[derive(Eq, PartialEq, Clone, Debug, Copy)]
 pub(crate) enum VidFormat {
     None,
     H264,
     H265,
 }
-#[derive(Eq, PartialEq, Clone, Debug)]
+#[derive(Eq, PartialEq, Clone, Debug, Copy)]
 pub(crate) enum AudFormat {
     None,
     Aac,
@@ -317,11 +316,13 @@ impl StreamInstance {
 
 impl StreamData {
     async fn new(name: StreamKind, instance: NeoInstance, strict: bool) -> Result<Self> {
-        const BUFFER_DURATION: Duration = Duration::from_secs(15);
+        let buffer_duration =
+            Duration::from_millis(instance.config().await?.borrow().buffer_duration);
+        log::trace!("New StreamData::{name:?}");
         // At 30fps for 15s with audio is is about 900 frames
-        // Therefore we set this buffer to a rather large 2000
-        let (vid, _) = broadcast::<StampedData>(2000);
-        let (aud, _) = broadcast::<StampedData>(2000);
+        let buffer_size: usize = 30usize * buffer_duration.as_millis() as usize / 1000usize;
+        let (vid, _) = broadcast::<StampedData>(buffer_size);
+        let (aud, _) = broadcast::<StampedData>(buffer_size);
         let (vid_history, _) = watch::<VecDeque<StampedData>>(VecDeque::new());
         let vid_history = Arc::new(vid_history);
         let (aud_history, _) = watch::<VecDeque<StampedData>>(VecDeque::new());
@@ -339,20 +340,35 @@ impl StreamData {
                     if let Some(encode) =
                         infos.iter().find(|encode| encode.name == name.to_string())
                     {
+                        let bitrate_table = encode
+                            .bitrate_table
+                            .split(',')
+                            .filter_map(|c| {
+                                let i: Result<u32, _> = c.parse();
+                                i.ok()
+                            })
+                            .collect::<Vec<u32>>();
+                        let framerate_table = encode
+                            .framerate_table
+                            .split(',')
+                            .filter_map(|c| {
+                                let i: Result<u32, _> = c.parse();
+                                i.ok()
+                            })
+                            .collect::<Vec<u32>>();
+
                         Ok((
                             [encode.resolution.width, encode.resolution.height],
-                            encode
-                                .bitrate_table
+                            bitrate_table
                                 .get(encode.default_bitrate as usize)
                                 .copied()
                                 .unwrap_or(encode.default_bitrate)
                                 * 1024,
-                            encode
-                                .framerate_table
+                            framerate_table
                                 .get(encode.default_framerate as usize)
                                 .copied()
                                 .unwrap_or(encode.default_framerate),
-                            encode.framerate_table.clone(),
+                            framerate_table.clone(),
                         ))
                     } else {
                         Ok(([0, 0], 0, 0, vec![]))
@@ -394,6 +410,17 @@ impl StreamData {
         let vid_history = me.vid_history.clone();
         let aud_history = me.aud_history.clone();
         let mut permit = instance.permit().await?;
+
+        // Rather than extract the time stamp from the frame data we
+        // create a new one from the fps
+        // this makes it easier to play the frames at a constant rate
+        // even across reconnects (since reconnects restart the ts otherwise)
+        // These are arc mutex to allow tthem to maintain their value across reconnects (else we get an implicit copy)
+        let master_ts = Arc::new(tokio::sync::RwLock::new(Duration::ZERO));
+        let fps_delta = Arc::new(tokio::sync::RwLock::new(Duration::from_millis(
+            1000 / (config.borrow().fps as u64),
+        )));
+
         me.handle = Some(tokio::task::spawn(async move {
             let r = tokio::select! {
                 _ = cancel.cancelled() => {
@@ -407,7 +434,6 @@ impl StreamData {
                         //
                         // This should stop one branch of the select from waking the other
                         // too often
-                        let watchdog_print_name = print_name.clone();
                         tokio::task::spawn(async move {
                             let mut check_timeout = timeout(Duration::from_secs(15), watchdog_rx.recv()).await; // Wait longer for the first feed
                             loop {
@@ -415,15 +441,12 @@ impl StreamData {
                                     Err(_) => {
                                         // Timeout
                                         // Break with Ok to trigger the restart
-                                        log::debug!("{watchdog_print_name}: Watchdog kicking the stream");
                                         break;
                                     },
                                     Ok(None) => {
-                                        log::debug!("{watchdog_print_name}: Watchdog dropped the stream");
                                         break;
                                     }
                                     Ok(_) => {
-                                        // log::debug!("{print_name}: Good Doggo");
                                         check_timeout = timeout(Duration::from_secs(10), watchdog_rx.recv()).await;
                                     }
                                 }
@@ -435,12 +458,14 @@ impl StreamData {
                         tokio::select! {
                             v = thread_inuse.dropped_users() => {
                                 // Handles the stop and restart when no active users
-                                log::debug!("{print_name}: Streaming STOP");
+                                log::trace!("Stopping StreamThread Permit");
                                 permit.deactivate().await?;
                                 v?;
+                                log::trace!("Waiting for streamthread aquire users");
                                 thread_inuse.aquired_users().await?; // Wait for new users of the stream
+                                log::trace!("Actictating streamthread permit");
                                 permit.activate().await?;
-                                log::debug!("{print_name}: Streaming START");
+                                log::trace!("Stream thread should now restart");
                                 AnyResult::Ok(())
                             },
                             _ = watchdog_eat_rx => {
@@ -455,24 +480,21 @@ impl StreamData {
                                     let aud_history = aud_history.clone();
                                     let watchdog_tx = watchdog_tx.clone();
                                     let fps_table = fps_table.clone();
-                                    let print_name = print_name.clone();
+                                    let master_ts = master_ts.clone();
+                                    let fps_delta = fps_delta.clone();
 
-                                    log::debug!("{print_name}: Running Stream Instance Task");
                                     Box::pin(async move {
+                                        log::trace!("Starting streamthread TASK");
                                         // use std::io::Write;
                                         // let mut file = std::fs::File::create("reference.h264")?;
                                         let mut recieved_iframe = false;
                                         let mut aud_keyframe = false;
 
                                         let res = async {
-                                            let mut prev_ts = Duration::ZERO;
                                             let mut stream_data = camera.start_video(name, 0, strict).await?;
                                             loop {
-                                                log::debug!("{print_name}:   Waiting for frame");
                                                 let data = stream_data.get_data().await??;
-                                                log::debug!("{print_name}:   Waiting for Watchdog");
                                                 watchdog_tx.send(()).await?;  // Feed the watchdog
-                                                log::debug!("{print_name}:   Got frame");
 
                                                 // Update the stream config with any information
                                                 match &data {
@@ -488,6 +510,9 @@ impl StreamData {
                                                                 false
                                                             }
                                                         });
+                                                        // seperate the borrow so we don't hold it over an await
+                                                        let new_delta = Duration::from_millis(1000 / (stream_config.borrow().fps as u64));
+                                                        *fps_delta.write().await = new_delta;
                                                     },
                                                     BcMedia::InfoV2(info) => {
                                                         stream_config.send_if_modified(|state| {
@@ -501,6 +526,9 @@ impl StreamData {
                                                                 false
                                                             }
                                                         });
+                                                        // seperate the borrow so we don't hold it over an await
+                                                        let new_delta = Duration::from_millis(1000 / (stream_config.borrow().fps as u64));
+                                                        *fps_delta.write().await = new_delta;
                                                     },
                                                     BcMedia::Iframe(frame) => {
                                                         stream_config.send_if_modified(|state| {
@@ -556,58 +584,60 @@ impl StreamData {
                                                 }
 
                                                 match data {
-                                                    BcMedia::Iframe(BcMediaIframe{data, microseconds, ..}) => {
-                                                        prev_ts = Duration::from_micros(microseconds as u64);
-                                                        // log::debug!("IFrame: {prev_ts:?}");
+                                                    BcMedia::Iframe(BcMediaIframe{data, ..}) => {
                                                         let d = StampedData{
                                                                 keyframe: true,
                                                                 data: Arc::new(data),
-                                                                ts: prev_ts
+                                                                ts: *master_ts.read().await,
                                                         };
                                                         let _ = vid_tx.send(d.clone());
                                                         vid_history.send_modify(|history| {
-                                                           let drop_time = d.ts.saturating_sub(BUFFER_DURATION);
+                                                           let drop_time = d.ts.saturating_sub(buffer_duration);
+                                                           let dts = d.ts;
                                                            history.push_back(d);
-                                                           while history.front().is_some_and(|di| di.ts < drop_time) {
+                                                           while history.front().is_some_and(|di| di.ts < drop_time || di.ts > dts) || history.len() > buffer_size {
                                                                history.pop_front();
                                                            }
+                                                           log::trace!("history: {}", history.len());
+                                                           let debug: Vec<Duration> = history.iter().map(|f| f.ts).collect();
+                                                           log::trace!("history ts: {:?}", debug);
                                                         });
                                                         recieved_iframe = true;
                                                         aud_keyframe = true;
-                                                        log::trace!("Sent Vid Key Frame");
+                                                        log::trace!("Sent Vid Key Frame: {:?}", master_ts.read().await);
+                                                        *master_ts.write().await += *fps_delta.read().await;
                                                     },
-                                                    BcMedia::Pframe(BcMediaPframe{data, microseconds,..}) if recieved_iframe => {
-                                                        prev_ts = Duration::from_micros(microseconds as u64);
-                                                        // log::debug!("PFrame: {prev_ts:?}");
-                                                        // log::debug!("data: {data:02X?}");
+                                                    BcMedia::Pframe(BcMediaPframe{data, ..}) if recieved_iframe => {
                                                         let d = StampedData{
                                                             keyframe: false,
                                                             data: Arc::new(data),
-                                                            ts: prev_ts
+                                                            ts: *master_ts.read().await,
                                                         };
                                                         let _ = vid_tx.send(d.clone());
                                                         vid_history.send_modify(|history| {
-                                                           let drop_time = d.ts.saturating_sub(BUFFER_DURATION);
+                                                           let drop_time = d.ts.saturating_sub(buffer_duration);
+                                                           let dts = d.ts;
                                                            history.push_back(d);
-                                                           while history.front().is_some_and(|di| di.ts < drop_time) {
+                                                           while history.front().is_some_and(|di| di.ts < drop_time || di.ts > dts)  || history.len() > buffer_size {
                                                                history.pop_front();
                                                            }
                                                         });
-                                                        log::trace!("Sent Vid Frame");
+                                                        *master_ts.write().await += *fps_delta.read().await;
+                                                        log::trace!("Sent Vid Frame: {:?}", master_ts.read().await);
                                                     }
                                                     BcMedia::Aac(BcMediaAac{data, ..}) | BcMedia::Adpcm(BcMediaAdpcm{data,..}) if recieved_iframe => {
-                                                        // log::debug!("Audio: {prev_ts:?}");
                                                         let d = StampedData{
                                                             keyframe: aud_keyframe,
                                                             data: Arc::new(data),
-                                                            ts: prev_ts,
+                                                            ts: *master_ts.read().await,
                                                         };
                                                         aud_keyframe = false;
                                                         let _ = aud_tx.send(d.clone())?;
                                                         aud_history.send_modify(|history| {
-                                                           let drop_time = d.ts.saturating_sub(BUFFER_DURATION);
+                                                           let drop_time = d.ts.saturating_sub(buffer_duration);
+                                                           let dts = d.ts;
                                                            history.push_back(d);
-                                                           while history.front().is_some_and(|di| di.ts < drop_time) {
+                                                           while history.front().is_some_and(|di| di.ts < drop_time || di.ts > dts) || history.len() > buffer_size {
                                                                history.pop_front();
                                                            }
                                                         });
@@ -617,6 +647,7 @@ impl StreamData {
                                                 }
                                             }
                                         }.await;
+                                        log::info!("video outgoing queue: {}", vid_tx.len());
                                         Ok(res)
                                     })
                                 }) => {
@@ -639,7 +670,6 @@ impl StreamData {
                     }
                 } => v,
             };
-            log::debug!("{print_name}: Stream Thead Stopped: {:?}", r);
             r
         }));
 
@@ -647,7 +677,6 @@ impl StreamData {
     }
 
     async fn shutdown(&mut self) -> Result<()> {
-        log::debug!("StreamData::shutdown Cancel");
         self.cancel.cancel();
         if let Some(handle) = self.handle.take() {
             let _ = handle.await;

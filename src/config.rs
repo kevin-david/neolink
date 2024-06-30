@@ -1,19 +1,19 @@
 use crate::mqtt::Discoveries;
-use lazy_static::lazy_static;
 use neolink_core::bc_protocol::{DiscoveryMethods, PrintFormat, StreamKind};
+use once_cell::sync::Lazy;
 use regex::Regex;
 use serde::{Deserialize, Serialize};
 use std::clone::Clone;
 use std::collections::HashSet;
-use validator::{Validate, ValidationError};
+use validator::ValidationError;
 use validator_derive::Validate;
 
-lazy_static! {
-    static ref RE_TLS_CLIENT_AUTH: Regex = Regex::new(r"^(none|request|require)$").unwrap();
-    static ref RE_PAUSE_MODE: Regex = Regex::new(r"^(black|still|test|none)$").unwrap();
-    static ref RE_MAXENC_SRC: Regex =
-        Regex::new(r"^([nN]one|[Aa][Ee][Ss]|[Bb][Cc][Ee][Nn][Cc][Rr][Yy][Pp][Tt])$").unwrap();
-}
+static RE_TLS_CLIENT_AUTH: Lazy<Regex> =
+    Lazy::new(|| Regex::new(r"^(none|request|require)$").unwrap());
+static RE_PAUSE_MODE: Lazy<Regex> = Lazy::new(|| Regex::new(r"^(black|still|test|none)$").unwrap());
+static RE_MAXENC_SRC: Lazy<Regex> = Lazy::new(|| {
+    Regex::new(r"^([nN]one|[Aa][Ee][Ss]|[Bb][Cc][Ee][Nn][Cc][Rr][Yy][Pp][Tt])$").unwrap()
+});
 
 #[derive(Debug, Deserialize, Serialize, Validate, Clone, PartialEq)]
 pub(crate) struct Config {
@@ -37,7 +37,7 @@ pub(crate) struct Config {
     pub(crate) mqtt: Option<MqttServerConfig>,
 
     #[validate(regex(
-        path = "RE_TLS_CLIENT_AUTH",
+        path = *RE_TLS_CLIENT_AUTH,
         message = "Incorrect tls auth",
         code = "tls_client_auth"
     ))]
@@ -135,6 +135,8 @@ pub(crate) struct CameraConfig {
     pub(crate) camera_uid: Option<String>,
 
     pub(crate) username: String,
+
+    #[serde(alias = "pass")]
     pub(crate) password: Option<String>,
 
     #[serde(default = "default_stream")]
@@ -159,7 +161,7 @@ pub(crate) struct CameraConfig {
 
     #[serde(default = "default_maxenc")]
     #[validate(regex(
-        path = "RE_MAXENC_SRC",
+        path = *RE_MAXENC_SRC,
         message = "Invalid maximum encryption method",
         code = "max_encryption"
     ))]
@@ -176,13 +178,18 @@ pub(crate) struct CameraConfig {
     pub(crate) update_time: bool,
 
     #[validate(range(
-        min = 0,
-        max = 500,
-        message = "Invalid buffer size",
-        code = "buffer_size"
+        min = 1,
+        max = 15000,
+        message = "Invalid buffer duration (it's in ms)",
+        code = "buffer_duration"
     ))]
-    #[serde(default = "default_buffer_size", alias = "size", alias = "buffer")]
-    pub(crate) buffer_size: usize,
+    /// Buffer duration in ms
+    #[serde(
+        default = "default_buffer_duration",
+        alias = "duration",
+        alias = "buffer"
+    )]
+    pub(crate) buffer_duration: u64,
 
     #[serde(default = "default_true", alias = "enable")]
     pub(crate) enabled: bool,
@@ -212,7 +219,7 @@ pub(crate) struct CameraConfig {
 
 #[derive(Debug, Deserialize, Serialize, Validate, Clone, PartialEq, Eq, Hash)]
 pub(crate) struct UserConfig {
-    #[validate(custom = "validate_username")]
+    #[validate(custom(function = "validate_username"))]
     #[serde(alias = "username")]
     pub(crate) name: String,
 
@@ -329,7 +336,7 @@ pub(crate) struct PauseConfig {
 
     #[serde(default = "default_pause_mode")]
     #[validate(regex(
-        path = "RE_PAUSE_MODE",
+        path = *RE_PAUSE_MODE,
         message = "Incorrect pause mode",
         code = "mode"
     ))]
@@ -488,8 +495,8 @@ fn default_pause() -> PauseConfig {
     }
 }
 
-fn default_buffer_size() -> usize {
-    25
+fn default_buffer_duration() -> u64 {
+    3000
 }
 
 fn default_max_discovery_retries() -> usize {

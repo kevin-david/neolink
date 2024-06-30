@@ -41,6 +41,7 @@ pub(crate) enum NeoCamCommand {
     State(OneshotSender<NeoCamThreadState>),
     GetPermit(OneshotSender<Permit>),
     PushNoti(OneshotSender<WatchReceiver<Option<PushNoti>>>),
+    GetUid(OneshotSender<String>),
 }
 /// The underlying camera binding
 pub(crate) struct NeoCam {
@@ -62,6 +63,7 @@ impl NeoCam {
         let (stream_request_tx, stream_request_rx) = mpsc(100);
         let (md_request_tx, md_request_rx) = mpsc(100);
         let (state_tx, state_rx) = watch(NeoCamThreadState::Connected);
+        let (uid_tx, uid_rx) = watch(config.camera_uid.clone());
 
         let set = JoinSet::new();
         let users = UseCounter::new().await;
@@ -89,14 +91,12 @@ impl NeoCam {
             let thread_cancel = sender_cancel.clone();
             let res = tokio::select! {
                 _ = sender_cancel.cancelled() => {
-                    log::debug!("Control thread Cancelled");
                     Result::Ok(())
                 },
                 v = async {
                     while let Some(command) = commander_rx.next().await {
                         match command {
                             NeoCamCommand::HangUp => {
-                                log::debug!("Cancel:: NeoCamCommand::HangUp");
                                 sender_cancel.cancel();
                                 return Result::<(), anyhow::Error>::Ok(());
                             }
@@ -151,14 +151,12 @@ impl NeoCam {
                             NeoCamCommand::Connect(sender) => {
                                 if !matches!(*state_tx.borrow(), NeoCamThreadState::Connected) {
                                     state_tx.send_replace(NeoCamThreadState::Connected);
-                                    log::debug!("{}: Connect On Request", thread_watch_config_rx.borrow().name);
                                 }
                                 let _ = sender.send(());
                             }
                             NeoCamCommand::Disconnect(sender) => {
                                 if !matches!(*state_tx.borrow(), NeoCamThreadState::Disconnected) {
                                     state_tx.send_replace(NeoCamThreadState::Disconnected);
-                                    log::debug!("{}: Disconnect On Request", thread_watch_config_rx.borrow().name);
                                 }
                                 let _ = sender.send(());
                             }
@@ -175,16 +173,21 @@ impl NeoCam {
                                     }
                                 ).await?;
                             },
+                            NeoCamCommand::GetUid(sender) => {
+                                let mut uid_rx = uid_rx.clone();
+                                tokio::task::spawn(async move {
+                                    let uid = uid_rx.wait_for(|v| v.is_some()).await?.clone().unwrap();
+                                    let _ = sender.send(uid);
+                                    AnyResult::Ok(())
+                                });
+                            },
                         }
                     }
-                    log::debug!("Control thread Senders dropped");
                     Ok(())
                 } => {
-                    log::debug!("Camera Control Thread Ended; {:?}", v);
                     v
                 }
             };
-            log::debug!("Control thread terminated");
             res
         });
 
@@ -206,11 +209,7 @@ impl NeoCam {
             me.cancel.clone(),
         )
         .await;
-        me.set.spawn(async move {
-            let v = cam_thread.run().await;
-            log::debug!("Camera MAIN thread ended; {:?}", v);
-            v
-        });
+        me.set.spawn(async move { cam_thread.run().await });
 
         // This thread maintains the streams
         let stream_instance = instance.subscribe().await?;
@@ -220,7 +219,6 @@ impl NeoCam {
             tokio::select! {
                 _ = stream_cancel.cancelled() => AnyResult::Ok(()),
                 v = stream_thread.run() => {
-                    log::debug!("Camera Stream thread ended; {:?}", v);
                     v
                 },
             }
@@ -234,7 +232,6 @@ impl NeoCam {
             tokio::select! {
                 _ = md_cancel.cancelled() => AnyResult::Ok(()),
                 v = md_thread.run() => {
-                    log::debug!("MD thread ended; {:?}", v);
                     v
                 },
             }
@@ -267,11 +264,30 @@ impl NeoCam {
                     for encode in stream_info.stream_infos.iter().flat_map(|stream_info| stream_info.encode_tables.clone()) {
                         supported_streams.push(std::format!("    {}: {}x{}", encode.name, encode.resolution.width, encode.resolution.height));
                     }
-                    log::debug!("{}: Listing Camera Supported Streams\n{}", report_name, supported_streams.join("\n"));
 
 
                     Ok(())
                 } => v
+            }
+        });
+
+        // This thread will update the UID by asking the camera.
+        // We cache this in the uid_rx
+        let uid_instance = instance.clone();
+        let uid_cancel = me.cancel.clone();
+        me.set.spawn(async move {
+            tokio::select! {
+                _ = uid_cancel.cancelled() => {
+                    AnyResult::Ok(())
+                },
+                v = async {
+                    let uid = uid_instance.run_task(|cam| Box::pin(async move {
+                        let uid = cam.uid().await?;
+                        Ok(uid)
+                    })).await?;
+                    uid_tx.send_replace(Some(uid));
+                    AnyResult::Ok(())
+                } => v,
             }
         });
 
@@ -315,13 +331,11 @@ impl NeoCam {
                             },
                         };
                         if r.is_err() {
-                            log::debug!("Push notifications stopped: {:?}", r);
                             break r;
                         }
                     }?;
                     AnyResult::Ok(())
                 } => {
-                    log::debug!("Push notification thread ended; {:?}", v);
                     v
                 },
             }
@@ -350,7 +364,6 @@ impl NeoCam {
                         }
                     }
                 } => {
-                    log::debug!("MD Wake Up thread ended; {:?}", v);
                     v
                 },
             }
@@ -363,7 +376,6 @@ impl NeoCam {
         // notifications are observed
         let connect_instance = instance.subscribe().await?;
         let connect_cancel = me.cancel.clone();
-        let connect_name = config.name.clone();
         me.set.spawn(async move {
             tokio::select!{
                 _ = connect_cancel.cancelled() => {
@@ -388,16 +400,13 @@ impl NeoCam {
                                 permit.deactivate().await?; // Watching only from here
                                 loop {
                                     permit.aquired_users().await?;
-                                    log::debug!("{connect_name}: InUse");
                                     connect_instance.connect().await?;
                                     permit.dropped_users().await?;
-                                    log::debug!("{connect_name}: Idle Wait");
                                     // Wait 30s or if we hit another use then go back and wait again
                                     tokio::select! {
                                         _ = sleep(Duration::from_secs(30)) => {},
                                         _ = permit.aquired_users() => continue,
                                     };
-                                    log::debug!("{connect_name}: Idle");
                                     connect_instance.disconnect().await?;
                                 }
                             } => v,
@@ -408,7 +417,6 @@ impl NeoCam {
                     }?;
                     AnyResult::Ok(())
                 } => {
-                    log::debug!("Idle Disconnect thread ended; {:?}", v);
                     v
                 },
             }

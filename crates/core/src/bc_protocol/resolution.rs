@@ -1,6 +1,5 @@
 //! This is a helper module to resolve either to a UID or a SockerAddr
 
-use log::*;
 use serde::{Deserialize, Serialize};
 use std::{
     io::Error,
@@ -89,7 +88,6 @@ impl ToSocketAddrsOrUid for str {
                 .collect::<Vec<_>>()
                 .into_iter()),
             Err(e) => {
-                debug!("Trying as uid");
                 let re = regex::Regex::new(r"^[0-9A-Za-z]+$").unwrap();
                 if re.is_match(self) {
                     Ok(vec![SocketAddrOrUid::Uid(
@@ -99,7 +97,6 @@ impl ToSocketAddrsOrUid for str {
                     )]
                     .into_iter())
                 } else {
-                    debug!("Regex fails {:?}  => {:?} ", re, self);
                     Err(e)
                 }
             }
@@ -117,7 +114,6 @@ impl ToSocketAddrsOrUid for String {
                 .collect::<Vec<_>>()
                 .into_iter()),
             Err(e) => {
-                debug!("Trying as uid");
                 let re = regex::Regex::new(r"^[0-9A-Za-z]+$").unwrap();
                 if re.is_match(self) {
                     Ok(vec![SocketAddrOrUid::Uid(
@@ -127,7 +123,6 @@ impl ToSocketAddrsOrUid for String {
                     )]
                     .into_iter())
                 } else {
-                    debug!("Regex fails {:?}  => {:?} ", re, self);
                     Err(e)
                 }
             }

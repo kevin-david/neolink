@@ -27,4 +27,5 @@ pub enum Command {
     MqttRtsp(super::mqtt::Opt),
     Image(super::image::Opt),
     Battery(super::battery::Opt),
+    Services(super::services::Opt),
 }

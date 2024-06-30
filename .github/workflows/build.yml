@@ -17,8 +17,8 @@ jobs:
         uses: fkirc/skip-duplicate-actions@v5
         with:
           # All of these options are optional, so you can remove them if you are happy with the defaults
-          concurrent_skipping: 'same_content_newer'
-          skip_after_successful_duplicate: 'false'
+          concurrent_skipping: "same_content_newer"
+          skip_after_successful_duplicate: "false"
 
   native:
     needs: pre_job
@@ -28,9 +28,9 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-22.04, windows-2022, macos-12]
+        os: [ubuntu-22.04, windows-2022, macos-12, macos-14] # macos-14+ is arm64
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         name: Checkout onto ${{ runner.os }}
       - if: runner.os == 'Linux'
         name: apt install gstreamer
@@ -45,6 +45,10 @@ jobs:
           choco install -y --no-progress gstreamer --version=1.20.0
           choco install -y --no-progress gstreamer-devel --version=1.20.0
           $env:GSTREAMER_1_0_ROOT_MSVC_X86_64=$env:SYSTEMDRIVE + '\gstreamer\1.0\msvc_x86_64\'
+          # Github runners work on both C or D drive and figuring out which was used is difficult
+          if (-not (Test-Path -Path "$env:GSTREAMER_1_0_ROOT_MSVC_X86_64" -PathType Container)) {
+            $env:GSTREAMER_1_0_ROOT_MSVC_X86_64='D:\\gstreamer\1.0\msvc_x86_64\'
+          }
           echo "GSTREAMER_1_0_ROOT_MSVC_X86_64=$env:GSTREAMER_1_0_ROOT_MSVC_X86_64"
 
           # Proto buffers
@@ -53,8 +57,18 @@ jobs:
           # Open SSL
           choco install -y --no-progress openssl --version=1.1.1.2100
           $env:OPENSSL_DIR=$env:SYSTEMDRIVE + '\Program Files\OpenSSL-Win64\'
+
+          # Alternative openssl location (depends on version that gets installed by choco)
           if (-not (Test-Path -Path "$env:OPENSSL_DIR" -PathType Container)) {
             $env:OPENSSL_DIR=$env:SYSTEMDRIVE + '\Program Files\OpenSSL\'
+          }
+          # Github runners work on both C or D drive and figuring out which was used is difficult
+          if (-not (Test-Path -Path "$env:OPENSSL_DIR" -PathType Container)) {
+            $env:OPENSSL_DIR='D:\\Program Files\OpenSSL-Win64\'
+          }
+          # Or course we could be on alternative location and drive....
+          if (-not (Test-Path -Path "$env:OPENSSL_DIR" -PathType Container)) {
+            $env:OPENSSL_DIR='D:\\Program Files\OpenSSL\'
           }
 
           # Set github vars
@@ -80,18 +94,18 @@ jobs:
           echo "OPENSSL_INCLUDE_DIR=$(brew --prefix openssl@1.1)/include/" >>  "${GITHUB_ENV}"
           echo "OPENSSL_LIB_DIR=$(brew --prefix openssl@1.1)/lib/" >>  "${GITHUB_ENV}"
       - name: Cache cargo registry
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: ~/.cargo/registry
           key: ${{ runner.os }}-cargo-registry-${{ hashFiles('**/Cargo.lock') }}
       - name: Cache cargo index
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: ~/.cargo/git
           key: ${{ runner.os }}-cargo-index-${{ hashFiles('**/Cargo.lock') }}
       - name: Cache cargo build
         if: runner.os != 'macOS' # Random missing crates on macOS, unclear why
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: target
           key: ${{ runner.os }}-cargo-build-target-${{ hashFiles('**/Cargo.lock') }}
@@ -102,8 +116,9 @@ jobs:
           echo "GSTREAMER_1_0_ROOT_MSVC_X86_64=${GSTREAMER_1_0_ROOT_MSVC_X86_64}"
           echo "PKG_CONFIG_PATH=${PKG_CONFIG_PATH}"
           # pkg-config --variable pc_path pkg-config
+          export JEMALLOC_SYS_WITH_LG_PAGE=16
           cargo  build --release --all-features
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           name: release-${{ matrix.os }}
           path: "target/release/neolink*"
@@ -138,7 +153,7 @@ jobs:
             # on i686, the pkgconfig path doesn't match the prefix!
             pkgconfig: i386-linux-gnu
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Install basic tools
         run: |
           apt-get update
@@ -168,13 +183,14 @@ jobs:
           TARGET: ${{ matrix.target }}
       - name: Build
         run: |
-          cargo build --verbose --release --all-features --target=${TARGET}
+          cargo build --release --verbose --all-features --target=${TARGET}
         env:
           # Retarget pkg-config as described in https://www.freedesktop.org/wiki/Software/pkg-config/CrossCompileProposal/
           PKG_CONFIG_ALLOW_CROSS: 1
           PKG_CONFIG_LIBDIR: /usr/lib/${{ matrix.pkgconfig }}/pkgconfig
           TARGET: ${{ matrix.target }}
-      - uses: actions/upload-artifact@v3
+          JEMALLOC_SYS_WITH_LG_PAGE: 16
+      - uses: actions/upload-artifact@v4
         with:
           name: release-${{ matrix.arch }}-bookworm
           path: "target/${{ matrix.target }}/release/neolink*"
@@ -190,33 +206,33 @@ jobs:
         id: vars
         shell: bash
         run: |
-            unset HAS_SECRET
-            if [ -n $SECRET ]; then HAS_SECRET='true' ; fi
-            echo "HAS_SECRET_TOKEN=${HAS_SECRET}" >> $GITHUB_OUTPUT
+          unset HAS_SECRET
+          if [ -n $SECRET ]; then HAS_SECRET='true' ; fi
+          echo "HAS_SECRET_TOKEN=${HAS_SECRET}" >> $GITHUB_OUTPUT
         env:
           SECRET: "${{ secrets.DOCKER_TOKEN }}"
       - name: Check out the repo
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         if: ${{ steps.vars.outputs.HAS_SECRET_TOKEN }}
       - name: Convert username to lower case for docker
         id: string_user
-        uses: ASzc/change-string-case-action@v5
+        uses: ASzc/change-string-case-action@v6
         with:
           string: ${{ github.repository_owner }}
       - name: Convert repo to lower case for docker
         id: string_repo
-        uses: ASzc/change-string-case-action@v5
+        uses: ASzc/change-string-case-action@v6
         with:
           string: ${{ github.repository }}
       - name: Set up QEMU
         if: ${{ steps.vars.outputs.HAS_SECRET_TOKEN }}
-        uses: docker/setup-qemu-action@v2
+        uses: docker/setup-qemu-action@v3
       - name: Set up Docker Buildx
         if: ${{ steps.vars.outputs.HAS_SECRET_TOKEN }}
-        uses: docker/setup-buildx-action@v2
+        uses: docker/setup-buildx-action@v3
       - name: Login to Docker Hub
         if: ${{ steps.vars.outputs.HAS_SECRET_TOKEN }}
-        uses: docker/login-action@v2
+        uses: docker/login-action@v3
         with:
           registry: docker.io
           username: ${{ vars.DOCKER_USERNAME || steps.string_user.outputs.lowercase }}
@@ -268,7 +284,7 @@ jobs:
           REPO_NAME: ${{ steps.docker_repo.outputs.DOCKER_NWO }}
       - name: Install latest rust
         run: |
-            rustup toolchain install stable
+          rustup toolchain install stable
       - name: Install toml-cli
         run: |
           cargo install toml-cli
@@ -283,28 +299,28 @@ jobs:
           mkdir linux/arm
           mkdir linux/arm64
       - name: Download Linux x86_64
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: release-amd64-bookworm
           path: linux/amd64
       - name: Download Linux armv7
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: release-armhf-bookworm
           path: linux/arm/v7
       - name: Download Linux arm64
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: release-arm64-bookworm
           path: linux/arm64
       - name: Download Linux i386
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: release-i386-bookworm
           path: linux/386
       - name: Push to Docker Hub
         if: ${{ steps.vars.outputs.HAS_SECRET_TOKEN }}
-        uses: docker/build-push-action@v3
+        uses: docker/build-push-action@v5
         with:
           platforms: linux/amd64,linux/arm/v7,linux/arm64,linux/386
           context: .
@@ -324,10 +340,10 @@ jobs:
       - "native"
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Install latest rust
         run: |
-            rustup toolchain install stable
+          rustup toolchain install stable
       - name: Install toml-cli
         run: |
           cargo install toml-cli
@@ -337,45 +353,51 @@ jobs:
           NEOLINK_VERSION="$(toml get Cargo.toml  package.version | sed 's|"||g')"
           echo "version=${NEOLINK_VERSION}"  >> $GITHUB_OUTPUT
       - name: Download Windows
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: release-windows-2022
           path: neolink_windows
       - name: Download Macos
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: release-macos-12
-          path: neolink_macos
+          path: neolink_macos_intel
+      - name: Download Macos arm64
+        uses: actions/download-artifact@v4
+        with:
+          name: release-macos-14
+          path: neolink_macos_m1
       - name: Download Linux x86_64
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: release-ubuntu-22.04
           path: neolink_linux_x86_64_ubuntu
       - name: Download Linux x86_64
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: release-amd64-bookworm
           path: neolink_linux_x86_64_bookworm
       - name: Download Linux armhf
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: release-armhf-bookworm
           path: neolink_linux_armhf
       - name: Download Linux arm64
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: release-arm64-bookworm
           path: neolink_linux_arm64
       - name: Download Linux i386
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: release-i386-bookworm
           path: neolink_linux_i386
-      - name: Prepare Releases
+      - name: Prepare releases
         run: |
           dirs=(
             neolink_windows
-            neolink_macos
+            neolink_macos_intel
+            neolink_macos_m1
             neolink_linux_x86_64_ubuntu
             neolink_linux_x86_64_bookworm
             neolink_linux_armhf
@@ -386,19 +408,20 @@ jobs:
             chmod +x "${d}/neolink"*
             zip -r "${d}.zip" "${d}"
           done
-      - name: Release
+      - name: release
         uses: softprops/action-gh-release@v1
         with:
           name: Neolink ${{steps.toml.outputs.version}}
           files: |
             neolink_windows.zip
-            neolink_macos.zip
+            neolink_macos_intel.zip
+            neolink_macos_m1.zip
             neolink_linux_x86_64_ubuntu.zip
             neolink_linux_x86_64_bookworm.zip
             neolink_linux_armhf.zip
             neolink_linux_arm64.zip
             neolink_linux_i386.zip
           body: |
-            Neolink Release ${{steps.toml.outputs.version}}
+            Neolink release ${{steps.toml.outputs.version}}
           draft: true
           prerelease: ${{ contains(github.ref_name,  'rc') }}

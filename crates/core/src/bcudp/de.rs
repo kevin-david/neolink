@@ -11,10 +11,10 @@ use nom::{
 
 type IResult<I, O, E = nom::error::VerboseError<I>> = Result<(I, O), nom::Err<E>>;
 
-fn make_error<I, E: ParseError<I>>(input: I, ctx: &'static str, kind: ErrorKind) -> E
+fn make_error<I, E>(input: I, ctx: &'static str, kind: ErrorKind) -> E
 where
     I: std::marker::Copy,
-    E: ContextError<I>,
+    E: ContextError<I> + ParseError<I>,
 {
     E::add_context(input, ctx, E::from_error_kind(input, kind))
 }
@@ -74,7 +74,12 @@ fn udp_disc(buf: &[u8]) -> IResult<&[u8], UdpDiscovery> {
     assert_eq!(checksum, actual_checksum);
 
     let decrypted_payload = decrypt(tid, enc_data_slice);
-    let payload = UdpXml::try_parse(decrypted_payload.as_slice()).map_err(|_| {
+    let payload = UdpXml::try_parse(decrypted_payload.as_slice()).map_err(|e| {
+        log::error!(
+            "decrypted_payload: {:?}",
+            std::str::from_utf8(&decrypted_payload)
+        );
+        log::error!("e: {:?}", e);
         Err::Error(make_error(
             buf,
             "DISC: Unable to decode UDPXml",
@@ -164,13 +169,10 @@ mod tests {
             e,
             Ok(BcUdp::Discovery(UdpDiscovery {
                 tid: 96,
-                payload: UdpXml {
-                    c2d_disc: Some(C2dDisc {
-                        cid: 82000,
-                        did: 80,
-                    }),
-                    ..
-                },
+                payload: UdpXml::C2dDisc(C2dDisc {
+                    cid: 82000,
+                    did: 80,
+                }),
             }))
         );
     }
@@ -187,15 +189,12 @@ mod tests {
             e,
             Ok(BcUdp::Discovery(UdpDiscovery {
                 tid: 113,
-                payload: UdpXml {
-                    d2c_t: Some(D2cT {
+                payload: UdpXml::D2cT(D2cT {
                         sid: 62098713,
                         conn: conn_str,
                         cid: 82001,
                         did: 96,
                     }),
-                    ..
-                },
             })) if &conn_str == "local"
         );
     }
@@ -212,15 +211,12 @@ mod tests {
             e,
             Ok(BcUdp::Discovery(UdpDiscovery {
                 tid: 1101,
-                payload: UdpXml {
-                    c2d_t: Some(C2dT {
+                payload: UdpXml::C2dT(C2dT {
                         sid: 62098713,
                         conn: conn_str,
                         cid: 82001,
                         mtu: 1350,
                     }),
-                    ..
-                },
             })) if &conn_str == "local"
         );
     }
@@ -237,17 +233,14 @@ mod tests {
             e,
             Ok(BcUdp::Discovery(UdpDiscovery {
                 tid: 1101,
-                payload: UdpXml {
-                    d2c_cfm: Some(D2cCfm {
+                payload: UdpXml::D2cCfm(D2cCfm {
                         sid: 62098713,
                         conn: conn_str,
                         rsp: 0,
                         cid: 82001,
                         did: 96,
-                        time_r: 0,
+                        time_r: Some(0),
                     }),
-                    ..
-                },
             })) if &conn_str == "local"
         );
     }
@@ -307,15 +300,16 @@ mod tests {
         ]
         .concat();
 
+        let mut buf = BytesMut::from(&sample[..]);
         // Should derealise all of this
         loop {
-            let e = BcUdp::deserialize(&mut BytesMut::from(&sample[..]));
+            let e = BcUdp::deserialize(&mut buf);
             match e {
                 Err(Error::Io(e)) if e.kind() == ErrorKind::UnexpectedEof => {
                     // Reach end of files
                     break;
                 }
-                Err(Error::NomIncomplete(_)) => {
+                Err(Error::NomIncomplete(_)) if buf.is_empty() => {
                     // Reach end of files
                     break;
                 }

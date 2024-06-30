@@ -96,7 +96,7 @@ mod tests {
         let msg2 = BcUdp::deserialize(&mut BytesMut::from(ser_buf.as_slice())).unwrap();
         assert_eq!(msg, msg2);
         // Raw samples don't quite match exactly
-        // because the yaserde for xml puts spaces and new lines in different places
+        // because the serde for xml puts spaces and new lines in different places
         // then the raw data from the camera so we skip this last assert
         //assert_eq!(&sample[..], ser_buf.as_slice());
     }
@@ -113,7 +113,7 @@ mod tests {
         let msg2 = BcUdp::deserialize(&mut BytesMut::from(ser_buf.as_slice())).unwrap();
         assert_eq!(msg, msg2);
         // Raw samples don't quite match exactly
-        // because the yaserde for xml puts spaces and new lines in different places
+        // because the serde for xml puts spaces and new lines in different places
         // then the raw data from the camera so we skip this last assert
         //assert_eq!(&sample[..], ser_buf.as_slice());
     }
@@ -130,7 +130,7 @@ mod tests {
         let msg2 = BcUdp::deserialize(&mut BytesMut::from(ser_buf.as_slice())).unwrap();
         assert_eq!(msg, msg2);
         // Raw samples don't quite match exactly
-        // because the yaserde for xml puts spaces and new lines in different places
+        // because the serde for xml puts spaces and new lines in different places
         // then the raw data from the camera so we skip this last assert
         //assert_eq!(&sample[..], ser_buf.as_slice());
     }
@@ -147,7 +147,7 @@ mod tests {
         let msg2 = BcUdp::deserialize(&mut BytesMut::from(ser_buf.as_slice())).unwrap();
         assert_eq!(msg, msg2);
         // Raw samples don't quite match exactly
-        // because the yaserde for xml puts spaces and new lines in different places
+        // because the serde for xml puts spaces and new lines in different places
         // then the raw data from the camera so we skip this last assert
         //assert_eq!(&sample[..], ser_buf.as_slice());
     }

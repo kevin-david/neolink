@@ -38,6 +38,7 @@ pub mod ser;
 /// Contains the structs for the know xmls of payloads and extension
 pub mod xml;
 
-mod xml_crypto;
+/// Contains the encryption protocols
+pub mod crypto;
 
 pub(crate) mod codex;

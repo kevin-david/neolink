@@ -239,16 +239,8 @@ impl BcCamera {
     /// The camera will zoom to a given zoom amount.
     /// Not sure what the units for this are, seems to be 1000 is 1x and 2000 is 2x
     pub async fn zoom_to(&self, zoom_pos: u32) -> Result<()> {
-        log::debug!("Setting to {}", zoom_pos);
         let current = self.get_zoom().await?;
-        log::debug!(
-            "   curr: {}, min: {}, max: {}",
-            current.zoom.cur_pos,
-            current.zoom.min_pos,
-            current.zoom.max_pos
-        );
         let zoom_pos = zoom_pos.clamp(current.zoom.min_pos, current.zoom.max_pos);
-        log::debug!("Clamped to {}", zoom_pos);
 
         self.has_ability_rw("control").await?;
         let connection = self.get_connection();
@@ -325,7 +317,10 @@ impl BcCamera {
         sub_get.send(get).await?;
         let msg = sub_get.recv().await?;
         if msg.meta.response_code != 200 {
-            return Err(Error::CameraServiceUnavaliable(msg.meta.response_code));
+            return Err(Error::CameraServiceUnavailable {
+                id: msg.meta.msg_id,
+                code: msg.meta.response_code,
+            });
         }
 
         if let BcBody::ModernMsg(ModernMsg {

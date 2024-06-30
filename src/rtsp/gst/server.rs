@@ -7,7 +7,7 @@ use super::AnyResult;
 use crate::config::*;
 
 use anyhow::Context;
-use gstreamer::glib::{self, object_subclass, subclass::types::ObjectSubclass, MainLoop, Object};
+use gstreamer::glib::{self, object_subclass, MainLoop, Object};
 use gstreamer_rtsp::RTSPAuthMethod;
 use gstreamer_rtsp_server::{
     gio::{TlsAuthenticationMode, TlsCertificate},
@@ -57,7 +57,12 @@ impl NeoRtspServer {
         factory.connect_client_connected(|_, client| {
             client.connect_new_session(|_, session| {
                 log::debug!("New Session");
-                session.set_timeout(5);
+                // Session timeout too small causes us to drop
+                // some ffmpeg clients too soon
+                // Too long causes too many open connections with
+                // clients like frigate (that seem to open multiple
+                //   connections without shutting down old ones)
+                session.set_timeout(30);
             });
         });
 

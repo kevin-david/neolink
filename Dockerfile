@@ -8,17 +8,15 @@ FROM docker.io/rust:slim-bookworm AS build
 ARG TARGETPLATFORM
 
 ENV DEBIAN_FRONTEND=noninteractive
-
-
 WORKDIR /usr/local/src/neolink
 COPY . /usr/local/src/neolink
 
 # Build the main program or copy from artifact
 #
-# We prefer building from artifact to reduce
+# We prefer copying from artifact to reduce
 # build time on the github runners
 #
-# Because of this through, during normal
+# Because of this though, during normal
 # github runner ops we are not testing the
 # docker to see if it will build from scratch
 # so if it is failing please make a PR
@@ -32,6 +30,7 @@ RUN  echo "TARGETPLATFORM: ${TARGETPLATFORM}"; \
   else \
     echo "Building from scratch"; \
     apt-get update && \
+        apt-get upgrade -y && \
         apt-get install -y --no-install-recommends \
           build-essential \
           openssl \
@@ -60,6 +59,7 @@ LABEL maintainer="$OWNER"
 
 # hadolint ignore=DL3008
 RUN apt-get update && \
+    apt-get upgrade -y && \
     apt-get install -y --no-install-recommends \
         openssl \
         dnsutils \
@@ -83,8 +83,11 @@ COPY docker/entrypoint.sh /entrypoint.sh
 RUN gst-inspect-1.0; \
     chmod +x "/usr/local/bin/neolink" && \
     "/usr/local/bin/neolink" --version && \
-    mkdir -m 0700 /root/.config/ # Location that the push notifications are cached to
+    mkdir -m 0700 /root/.config/
 
-CMD ["/usr/local/bin/neolink", "rtsp", "--config", "/etc/neolink.toml"]
+ENV NEO_LINK_MODE="rtsp" NEO_LINK_PORT=8554
+
+CMD /usr/local/bin/neolink "${NEO_LINK_MODE}" --config /etc/neolink.toml
 ENTRYPOINT ["/entrypoint.sh"]
-EXPOSE 8554
+EXPOSE ${NEO_LINK_PORT}
+

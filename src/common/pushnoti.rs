@@ -5,12 +5,14 @@
 
 use anyhow::Context;
 use fcm_push_listener::*;
+use std::collections::{HashMap, HashSet};
 use std::{fs, sync::Arc};
 use tokio::{
     sync::{
         mpsc::{Receiver as MpscReceiver, Sender as MpscSender},
         oneshot::Sender as OneshotSender,
         watch::{channel as watch, Receiver as WatchReceiver, Sender as WatchSender},
+        RwLock,
     },
     time::{sleep, timeout, Duration},
 };
@@ -20,8 +22,8 @@ use crate::AnyResult;
 
 pub(crate) struct PushNotiThread {
     pn_watcher: Arc<WatchSender<Option<PushNoti>>>,
-    registed_cameras: Vec<NeoInstance>,
-    received_ids: Vec<String>,
+    registed_cameras: HashMap<String, NeoInstance>,
+    received_ids: Arc<RwLock<HashSet<String>>>,
 }
 
 // The push notification
@@ -50,8 +52,8 @@ impl PushNotiThread {
 
         Ok(PushNotiThread {
             pn_watcher: Arc::new(pn_watcher),
-            registed_cameras: vec![],
-            received_ids: vec![],
+            registed_cameras: Default::default(),
+            received_ids: Arc::new(RwLock::new(Default::default())),
         })
     }
 
@@ -67,7 +69,37 @@ impl PushNotiThread {
             let sender_id = "743639030586"; // andriod
                                             // let sender_id = "696841269229"; // ios
 
+            // let firebase_app_id = "1:743639030586:android:86f60a4fb7143876";
+            // let firebase_project_id = "reolink-login";
+            // let firebase_api_key = "AIzaSyBEUIuWHnnOEwFahxWgQB4Yt4NsgOmkPyE";
+            // let vapid_key = "????";
+
             let token_path = dirs::config_dir().map(|mut d| {
+                fs::create_dir(&d)
+                    .map_or_else(
+                        |res| {
+                            if let std::io::ErrorKind::AlreadyExists = res.kind() {
+                                Ok(())
+                            } else {
+                                Err(res)
+                            }
+                        },
+                        Ok,
+                    )
+                    .expect("Unable to create directory for push notification settings: {d:?}");
+                d.push("neolink");
+                fs::create_dir(&d)
+                    .map_or_else(
+                        |res| {
+                            if let std::io::ErrorKind::AlreadyExists = res.kind() {
+                                Ok(())
+                            } else {
+                                Err(res)
+                            }
+                        },
+                        Ok,
+                    )
+                    .expect("Unable to create directory for push notification settings: {d:?}");
                 d.push("./neolink_token.toml");
                 d
             });
@@ -114,23 +146,8 @@ impl PushNotiThread {
 
             log::debug!("Push notification Listening");
             let thread_pn_watcher = self.pn_watcher.clone();
-            let mut listener = FcmPushListener::create(
-                registration,
-                |message: FcmMessage| {
-                    log::debug!("Got FCM Message: {:?}", message.payload_json);
-                    if let Some(id) = message.persistent_id.clone() {
-                        // Don't worry if queue is full we will just not register as received yet
-                        let _ = sender.try_send(PnRequest::AddPushID { id });
-                    }
-                    thread_pn_watcher.send_replace(Some(PushNoti {
-                        message: message.payload_json,
-                        id: message.persistent_id,
-                    }));
-                },
-                self.received_ids.clone(),
-            );
 
-            for instance in self.registed_cameras.iter() {
+            for (_, instance) in self.registed_cameras.iter() {
                 let uid = uid.clone();
                 let fcm_token = fcm_token.clone();
                 let instance = instance.clone();
@@ -154,9 +171,25 @@ impl PushNotiThread {
                 });
             }
 
+            let received_ids = self.received_ids.clone();
             tokio::select! {
                 v = async {
                     loop {
+                        let mut listener = FcmPushListener::create(
+                            registration.clone(),
+                            |message: FcmMessage| {
+                                log::debug!("Got FCM Message: {:?}", message.payload_json);
+                                if let Some(id) = message.persistent_id.clone() {
+                                    // Don't worry if queue is full we will just not register as received yet
+                                    let _ = sender.try_send(PnRequest::AddPushID { id });
+                                }
+                                thread_pn_watcher.send_replace(Some(PushNoti {
+                                    message: message.payload_json,
+                                    id: message.persistent_id,
+                                }));
+                            },
+                            received_ids.read().await.iter().cloned().collect(),
+                        );
                         let r = timeout(Duration::from_secs(60*5), listener.connect()).await;
                         match &r {
                             Ok(Ok(_)) => {
@@ -200,7 +233,7 @@ impl PushNotiThread {
                             PnRequest::Activate{instance, sender} => {
                                 let uid = uid.clone();
                                 let fcm_token = fcm_token.clone();
-                                self.registed_cameras.push(instance.clone());
+                                self.registed_cameras.insert(uid.clone(), instance.clone());
                                 tokio::task::spawn(async move {
                                     let r = instance.run_task(|camera| {
                                         let fcm_token = fcm_token.clone();
@@ -220,7 +253,8 @@ impl PushNotiThread {
                                 });
                             }
                             PnRequest::AddPushID{id} => {
-                                self.received_ids.push(id);
+                                log::trace!("Recived Push Notifcation of ID: {id}");
+                                received_ids.write().await.insert(id);
                             }
                         }
                     }

@@ -33,18 +33,19 @@ impl Encoder<Bc> for BcCodex {
 
     fn encode(&mut self, item: Bc, dst: &mut BytesMut) -> Result<()> {
         // let context = self.context.read().unwrap();
+        const BC_ENCRYPTED: EncryptionProtocol = EncryptionProtocol::BCEncrypt;
         let buf: Vec<u8> = Default::default();
-        let enc_protocol: EncryptionProtocol = match self.context.get_encrypted() {
-            EncryptionProtocol::Aes(_) | EncryptionProtocol::FullAes(_)
+        let enc_protocol: &EncryptionProtocol = match self.context.get_encrypted() {
+            EncryptionProtocol::Aes { .. } | EncryptionProtocol::FullAes { .. }
                 if item.meta.msg_id == 1 =>
             {
                 // During login the encyption protocol cannot go higher than BCEncrypt
                 // even if we support AES. (BUt it can go lower i.e. None)
-                EncryptionProtocol::BCEncrypt
+                &BC_ENCRYPTED
             }
-            n => *n,
+            n => n,
         };
-        let buf = item.serialize(buf, &enc_protocol)?;
+        let buf = item.serialize(buf, enc_protocol)?;
         dst.extend_from_slice(buf.as_slice());
         Ok(())
     }
@@ -117,10 +118,10 @@ impl Decoder for BcCodex {
                 match encryption_protocol_byte {
                     0x00 => self.context.set_encrypted(EncryptionProtocol::Unencrypted),
                     0x01 => self.context.set_encrypted(EncryptionProtocol::BCEncrypt),
-                    0x02 => self.context.set_encrypted(EncryptionProtocol::Aes(
+                    0x02 => self.context.set_encrypted(EncryptionProtocol::aes(
                         self.context.credentials.make_aeskey(nonce),
                     )),
-                    0x12 => self.context.set_encrypted(EncryptionProtocol::FullAes(
+                    0x12 => self.context.set_encrypted(EncryptionProtocol::full_aes(
                         self.context.credentials.make_aeskey(nonce),
                     )),
                     _ => {
