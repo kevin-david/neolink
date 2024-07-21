@@ -228,7 +228,8 @@ pub struct DeviceInfo {
     #[serde(rename = "@version")]
     pub version: Option<String>,
     /// The resolution xml block
-    pub resolution: Resolution,
+    /// Does not exist for floodlights
+    pub resolution: Option<Resolution>,
 }
 
 /// VersionInfo xml
