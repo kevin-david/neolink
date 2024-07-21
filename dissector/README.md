@@ -13,7 +13,7 @@ make LUA_DIR=/usr
 The shared object library should be copied to `/usr/local/lib/lua/5.2/`
 ```
 mkdir --parents /usr/local/lib/lua/5.2/
-cp luagcypt.so /usr/local/lib/lua/5.2/
+cp luagcrypt.so /usr/local/lib/lua/5.2/
 ```
 Additionally, the system where the dissector is used needs these packages installing (if not already present): `libgcrypt20 libgpg-error0`
 ## Install `baichuan.lua`
