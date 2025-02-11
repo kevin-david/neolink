@@ -36,6 +36,14 @@ pub const MSG_ID_MOTION: u32 = 33;
 pub const MSG_ID_SET_SERVICE_PORTS: u32 = 36;
 /// Get service ports
 pub const MSG_ID_GET_SERVICE_PORTS: u32 = 37;
+/// Get Email setting
+pub const MSG_ID_GET_EMAIL: u32 = 42;
+/// Set email settings
+pub const MSG_ID_SET_EMAIL: u32 = 43;
+/// Get users and general system info
+pub const MSG_ID_GET_ABILITY_SUPPORT: u32 = 58;
+/// Update, create and remove users
+pub const MSG_ID_UPDATE_USER_LIST: u32 = 59;
 /// Version messages have this ID
 pub const MSG_ID_VERSION: u32 = 80;
 /// Ping messages have this ID
@@ -50,6 +58,8 @@ pub const MSG_ID_SNAP: u32 = 109;
 pub const MSG_ID_UID: u32 = 114;
 /// Used to pass the token and client ID for push notifications
 pub const MSG_ID_PUSH_INFO: u32 = 124;
+/// Send a test email configuration
+pub const MSG_ID_TEST_EMAIL: u32 = 141;
 /// StreamInfoList messages have this ID
 pub const MSG_ID_STREAM_INFO_LIST: u32 = 146;
 /// Used to get the abilities of a user
@@ -70,6 +80,10 @@ pub const MSG_ID_SET_LED_STATUS: u32 = 209;
 pub const MSG_ID_GET_PIR_ALARM: u32 = 212;
 /// Setting PIR status messages have this ID
 pub const MSG_ID_START_PIR_ALARM: u32 = 213;
+/// Set Email Task
+pub const MSG_ID_SET_EMAIL_TASK: u32 = 216;
+/// Get Email Task
+pub const MSG_ID_GET_EMAIL_TASK: u32 = 217;
 /// UDP Keep alive
 pub const MSG_ID_UDP_KEEP_ALIVE: u32 = 234;
 /// Battery message initiaed by the camera
@@ -182,8 +196,11 @@ pub struct BcMeta {
     pub stream_type: u8,
     /// On modern messages this is the response code
     /// When sending a command it is set to `0`. The reply from the camera can be
+    ///
     /// - `200` for OK
+    ///
     /// - `400` for bad request
+    ///
     /// A malformed packet will return a `400` code
     pub response_code: u16,
     /// A message ID is used to match replies with requests. The camera will parrot back
@@ -201,14 +218,6 @@ pub struct BcMeta {
     /// - 0x6414: "modern" 24 bytes
     /// - 0x0000: "modern" 24 bytes
     pub class: u16,
-}
-
-/// The components of the Baichuan header that must be filled out after the body is serialized, or
-/// is needed for the deserialization of the body (strictly part of the wire format of the message)
-#[derive(Debug, PartialEq, Eq)]
-pub(super) struct BcSendInfo {
-    pub body_len: u32,
-    pub payload_offset: Option<u32>,
 }
 
 #[derive(Debug)]

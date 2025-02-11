@@ -1,4 +1,5 @@
 # BC Messages
+
 ---
 
 This is an attempt to document the BC messages. It is subject to change
@@ -6,15 +7,16 @@ and some aspects of it may not be correct. Please feel free to submit
 a PR to improve it.
 
 Message have zero to two payloads.
+
 - The first payload is after the header and before the payload offset
   - This payload always contains Extension xml and so is called `Extension`
     in this doc
 - The second payload is after the payload offset
+
   - This is either Body xml or binary data.
   - If it is binary the extension xml will contain the `<binary>1</binary>`
     tag
   - This is called `Payload` in this doc
-
 
 - 1: Login Legacy
 
@@ -22,9 +24,9 @@ Message have zero to two payloads.
 
     - Header
 
-    |    magic     |  message id  | message length | encryption offset | encrypt | unknown | message class |
-    |--------------|--------------|----------------|-------------------|---------|---------|---------------|
-    | f0 de bc 0a  | 01 00 00 00  |  2c 07 00 00   |    00 00 00 01    |    01   |    dc   |     14 65     |
+    | magic       | message id  | message length | encryption offset | encrypt | unknown | message class |
+    | ----------- | ----------- | -------------- | ----------------- | ------- | ------- | ------------- |
+    | f0 de bc 0a | 01 00 00 00 | 2c 07 00 00    | 00 00 00 01       | 01      | dc      | 14 65         |
 
     - Payload
 
@@ -40,9 +42,9 @@ Message have zero to two payloads.
 
     - Header
 
-    |    magic     |  message id  | message length | encryption offset | encrypt | unknown | message class |
-    |--------------|--------------|----------------|-------------------|---------|---------|---------------|
-    | f0 de bc 0a  | 01 00 00 00  |  91 00 00 00   |    00 00 00 01    |    01   |    dd   |     14 66     |
+    | magic       | message id  | message length | encryption offset | encrypt | unknown | message class |
+    | ----------- | ----------- | -------------- | ----------------- | ------- | ------- | ------------- |
+    | f0 de bc 0a | 01 00 00 00 | 91 00 00 00    | 00 00 00 01       | 01      | dd      | 14 66         |
 
     - Payload
 
@@ -57,18 +59,19 @@ Message have zero to two payloads.
     ```
 
     - **Notes:** Sends back a NONCE used for the modern login message. This is
-    effectively an upgrade request to use the modern xml style over legacy.
-    Legacy cameras respond with status code `c8 00`, message class `00 00` and a basic camera description payload.
-    The legacy protocol beyond this point is not documented and not implemented in Neolink.
+      effectively an upgrade request to use the modern xml style over legacy.
+      Legacy cameras respond with status code `c8 00`, message class `00 00` and a basic camera description payload.
+      The legacy protocol beyond this point is not documented and not implemented in Neolink.
 
 - 1: Login Modern
 
   - Client
+
     - Header
 
-    |    Magic     |  Message ID  | Message Length | Encryption Offset |    Status Code    | Message Class | Payload Offset |
-    |--------------|--------------|----------------|-------------------|-------------------|---------------|---------------|
-    | f0 de bc 0a  | 01 00 00 00  |  28 01 00 00   |    00 00 00 01    |       00 00       |     14 64     |  00 00 00 00  |
+    | Magic       | Message ID  | Message Length | Encryption Offset | Status Code | Message Class | Payload Offset |
+    | ----------- | ----------- | -------------- | ----------------- | ----------- | ------------- | -------------- |
+    | f0 de bc 0a | 01 00 00 00 | 28 01 00 00    | 00 00 00 01       | 00 00       | 14 64         | 00 00 00 00    |
 
     - Payload
 
@@ -91,9 +94,9 @@ Message have zero to two payloads.
 
     - Header
 
-    |    Magic     |  Message ID  | Message Length | Encryption Offset |    Status Code    | Message Class | Payload Offset |
-    |--------------|--------------|----------------|-------------------|-------------------|---------------|---------------|
-    | f0 de bc 0a  | 01 00 00 00  |  2e 06 00 00   |    00 00 00 01    |       c8 00       |     00 00     |  00 00 00 00  |
+    | Magic       | Message ID  | Message Length | Encryption Offset | Status Code | Message Class | Payload Offset |
+    | ----------- | ----------- | -------------- | ----------------- | ----------- | ------------- | -------------- |
+    | f0 de bc 0a | 01 00 00 00 | 2e 06 00 00    | 00 00 00 01       | c8 00       | 00 00         | 00 00 00 00    |
 
     - Payload
 
@@ -168,9 +171,9 @@ Message have zero to two payloads.
 
     - Header
 
-    |    Magic     |  Message ID  | Message Length | Encryption Offset |    Status Code    | Message Class | Payload Offset |
-    |--------------|--------------|----------------|-------------------|-------------------|---------------|----------------|
-    | f0 de bc 0a  | 02 00 00 00  |  af 00 00 00   |    00 00 00 09    |       00 00       |     14 64     |   00 00 00 00  |
+    | Magic       | Message ID  | Message Length | Encryption Offset | Status Code | Message Class | Payload Offset |
+    | ----------- | ----------- | -------------- | ----------------- | ----------- | ------------- | -------------- |
+    | f0 de bc 0a | 02 00 00 00 | af 00 00 00    | 00 00 00 09       | 00 00       | 14 64         | 00 00 00 00    |
 
     - Payload
 
@@ -191,9 +194,9 @@ Message have zero to two payloads.
 
     - Header
 
-    |    Magic     |  Message ID  | Message Length | Encryption Offset |    Status Code    | Message Class | Payload Offset |
-    |--------------|--------------|----------------|-------------------|-------------------|---------------|---------------|
-    | f0 de bc 0a  | 03 00 00 00  |  aa 00 00 00   |    00 00 00 09    |       00 00       |     14 64     |  00 00 00 00  |
+    | Magic       | Message ID  | Message Length | Encryption Offset | Status Code | Message Class | Payload Offset |
+    | ----------- | ----------- | -------------- | ----------------- | ----------- | ------------- | -------------- |
+    | f0 de bc 0a | 03 00 00 00 | aa 00 00 00    | 00 00 00 09       | 00 00       | 14 64         | 00 00 00 00    |
 
     - Payload
 
@@ -214,9 +217,9 @@ Message have zero to two payloads.
 
     - Header
 
-    |    Magic     |  Message ID  | Message Length | Encryption Offset |    Status Code    | Message Class | Payload Offset |
-    |--------------|--------------|----------------|-------------------|-------------------|---------------|---------------|
-    | f0 de bc 0a  | 03 00 00 00  |  8a 00 00 00   |    00 00 00 09    |       c8 00       |     00 00     |  6a 00 00 00  |
+    | Magic       | Message ID  | Message Length | Encryption Offset | Status Code | Message Class | Payload Offset |
+    | ----------- | ----------- | -------------- | ----------------- | ----------- | ------------- | -------------- |
+    | f0 de bc 0a | 03 00 00 00 | 8a 00 00 00    | 00 00 00 09       | c8 00       | 00 00         | 6a 00 00 00    |
 
     - Extension
 
@@ -234,20 +237,20 @@ Message have zero to two payloads.
     ```
 
     - **Notes:** Camera then send the stream as a binary payload in all
-    following messages of id 3
+      following messages of id 3
 
   - Camera Stream Binary
 
     - Header
 
-    |    Magic     |  Message ID  | Message Length | Encryption Offset |    Status Code    | Message Class | Payload Offset |
-    |--------------|--------------|----------------|-------------------|-------------------|---------------|---------------|
-    | f0 de bc 0a  | 03 00 00 00  |  e8 5e 00 00   |    00 00 00 09    |       c8 00       |     00 00     |  00 00 00 00  |
+    | Magic       | Message ID  | Message Length | Encryption Offset | Status Code | Message Class | Payload Offset |
+    | ----------- | ----------- | -------------- | ----------------- | ----------- | ------------- | -------------- |
+    | f0 de bc 0a | 03 00 00 00 | e8 5e 00 00    | 00 00 00 09       | c8 00       | 00 00         | 00 00 00 00    |
 
     - Payload
 
       Body is binary. This binary represents an embedded stream which should
-      is detailed in [mediapacket.md](dissector/mediapacket.md).
+      is detailed in [mediapacket.md](mediapacket.md).
 
 - 4: `<Preview>` (stop)
 
@@ -255,9 +258,9 @@ Message have zero to two payloads.
 
     - Header
 
-        |    Magic     |  Message ID  | Message Length | Encryption Offset |    Status Code    | Message Class | Payload Offset |
-        |--------------|--------------|----------------|-------------------|-------------------|---------------|---------------|
-        | 0a bc de f0  | 00 00 00 04  |  00 00 00 86   |    2b 00 00 00    |       00 00       |     64 14     |  00 00 00 00  |
+      | Magic       | Message ID  | Message Length | Encryption Offset | Status Code | Message Class | Payload Offset |
+      | ----------- | ----------- | -------------- | ----------------- | ----------- | ------------- | -------------- |
+      | 0a bc de f0 | 00 00 00 04 | 00 00 00 86    | 2b 00 00 00       | 00 00       | 64 14         | 00 00 00 00    |
 
     - Payload
 
@@ -275,9 +278,9 @@ Message have zero to two payloads.
 
     - Header
 
-        |    Magic     |  Message ID  | Message Length | Encryption Offset |    Status Code    | Message Class | Payload Offset |
-        |--------------|--------------|----------------|-------------------|-------------------|---------------|---------------|
-        | 0a bc de f0  | 00 00 00 04  |  00 00 00 00   |    2b 00 00 00    |       c8 00       |     00 00     |  00 00 00 00  |
+      | Magic       | Message ID  | Message Length | Encryption Offset | Status Code | Message Class | Payload Offset |
+      | ----------- | ----------- | -------------- | ----------------- | ----------- | ------------- | -------------- |
+      | 0a bc de f0 | 00 00 00 04 | 00 00 00 00    | 2b 00 00 00       | c8 00       | 00 00         | 00 00 00 00    |
 
 - 10: `<TalkAbility>`
 
@@ -285,9 +288,9 @@ Message have zero to two payloads.
 
     - Header
 
-        |    Magic     |  Message ID  | Message Length | Encryption Offset |    Status Code    | Message Class | Payload Offset |
-        |--------------|--------------|----------------|-------------------|-------------------|---------------|---------------|
-        | 0a bc de f0  | 00 00 00 0a  |  00 00 00 68   |    0b 00 00 00    |       00 00       |     64 14     |  00 00 00 68  |
+      | Magic       | Message ID  | Message Length | Encryption Offset | Status Code | Message Class | Payload Offset |
+      | ----------- | ----------- | -------------- | ----------------- | ----------- | ------------- | -------------- |
+      | 0a bc de f0 | 00 00 00 0a | 00 00 00 68    | 0b 00 00 00       | 00 00       | 64 14         | 00 00 00 68    |
 
     - Extension
 
@@ -302,9 +305,9 @@ Message have zero to two payloads.
 
     - Header
 
-        |    Magic     |  Message ID  | Message Length | Encryption Offset |    Status Code    | Message Class | Payload Offset |
-        |--------------|--------------|----------------|-------------------|-------------------|---------------|---------------|
-        | 0a bc de f0  | 00 00 00 0a  |  00 00 01 f7   |    0b 00 00 00    |       c8 00       |     00 00     |  00 00 00 00  |
+      | Magic       | Message ID  | Message Length | Encryption Offset | Status Code | Message Class | Payload Offset |
+      | ----------- | ----------- | -------------- | ----------------- | ----------- | ------------- | -------------- |
+      | 0a bc de f0 | 00 00 00 0a | 00 00 01 f7    | 0b 00 00 00       | c8 00       | 00 00         | 00 00 00 00    |
 
     - Payload
 
@@ -338,9 +341,9 @@ Message have zero to two payloads.
 
     - Header
 
-        |    Magic     |  Message ID  | Message Length | Encryption Offset |    Status Code    | Message Class | Payload Offset |
-        |--------------|--------------|----------------|-------------------|-------------------|---------------|---------------|
-        | 0a bc de f0  | 00 00 00 12  |  00 00 00 a4   |    1e 00 00 00    |       00 00       |     64 14     |  00 00 00 00  |
+      | Magic       | Message ID  | Message Length | Encryption Offset | Status Code | Message Class | Payload Offset |
+      | ----------- | ----------- | -------------- | ----------------- | ----------- | ------------- | -------------- |
+      | 0a bc de f0 | 00 00 00 12 | 00 00 00 a4    | 1e 00 00 00       | 00 00       | 64 14         | 00 00 00 00    |
 
     - Payload
 
@@ -356,16 +359,16 @@ Message have zero to two payloads.
     ```
 
     - **Notes** : The known movement commands are `"left"`, `"right"`, `"up"`, `"down"`, `"leftUp"`,
-                  `"leftDown"`, `"rightUp"`, `"rightDown"` and `"stop"` although the diagonal movement
-                  does not seem to work.
+      `"leftDown"`, `"rightUp"`, `"rightDown"` and `"stop"` although the diagonal movement
+      does not seem to work.
 
   - Camera
 
     - Header
 
-        |    Magic     |  Message ID  | Message Length | Encryption Offset |    Status Code    | Message Class | Payload Offset |
-        |--------------|--------------|----------------|-------------------|-------------------|---------------|---------------|
-        | 0a bc de f0  | 00 00 00 12  |  00 00 00 00   |    1e 00 00 00    |       c8 00       |     00 00     |  00 00 00 00  |
+      | Magic       | Message ID  | Message Length | Encryption Offset | Status Code | Message Class | Payload Offset |
+      | ----------- | ----------- | -------------- | ----------------- | ----------- | ------------- | -------------- |
+      | 0a bc de f0 | 00 00 00 12 | 00 00 00 00    | 1e 00 00 00       | c8 00       | 00 00         | 00 00 00 00    |
 
 - 19: `<PtzPreset>`
 
@@ -373,9 +376,9 @@ Message have zero to two payloads.
 
     - Header
 
-        |    Magic     | Message ID  | Message Length | Encryption Offset |    Status Code    | Message Class | Payload Offset |
-        |--------------|-------------|----------------|-------------------|-------------------|---------------|---------------|
-        | 0a bc de f0  | 00 00 00 13 | 00 00 01 44    |    1e 00 00 00    |       00 00       |     64 14     |  00 00 00 00  |
+      | Magic       | Message ID  | Message Length | Encryption Offset | Status Code | Message Class | Payload Offset |
+      | ----------- | ----------- | -------------- | ----------------- | ----------- | ------------- | -------------- |
+      | 0a bc de f0 | 00 00 00 13 | 00 00 01 44    | 1e 00 00 00       | 00 00       | 64 14         | 00 00 00 00    |
 
     - Payload
 
@@ -401,10 +404,9 @@ Message have zero to two payloads.
 
     - Header
 
-        |    Magic     | Message ID  | Message Length | Encryption Offset |    Status Code    | Message Class | Payload Offset |
-        |--------------|-------------|----------------|-------------------|-------------------|---------------|---------------|
-        | 0a bc de f0  | 00 00 00 13 |  00 00 00 00   |    1e 00 00 00    |       c8 00       |     00 00     |  00 00 00 00  |
-
+      | Magic       | Message ID  | Message Length | Encryption Offset | Status Code | Message Class | Payload Offset |
+      | ----------- | ----------- | -------------- | ----------------- | ----------- | ------------- | -------------- |
+      | 0a bc de f0 | 00 00 00 13 | 00 00 00 00    | 1e 00 00 00       | c8 00       | 00 00         | 00 00 00 00    |
 
 - 23: `Reboot`
 
@@ -412,18 +414,17 @@ Message have zero to two payloads.
 
     - Header
 
-        |    Magic     |  Message ID  | Message Length | Encryption Offset |    Status Code    | Message Class | Binary Offset |
-        |--------------|--------------|----------------|-------------------|-------------------|---------------|---------------|
-        | 0a bc de f0  | 00 00 00 17  |  00 00 00 00   |    00 00 00 00    |       00 00       |     64 14     |  00 00 00 00  |
-
+      | Magic       | Message ID  | Message Length | Encryption Offset | Status Code | Message Class | Binary Offset |
+      | ----------- | ----------- | -------------- | ----------------- | ----------- | ------------- | ------------- |
+      | 0a bc de f0 | 00 00 00 17 | 00 00 00 00    | 00 00 00 00       | 00 00       | 64 14         | 00 00 00 00   |
 
   - Camera
 
     - Header
 
-        |    Magic     |  Message ID  | Message Length | Encryption Offset |    Status Code    | Message Class | Binary Offset |
-        |--------------|--------------|----------------|-------------------|-------------------|---------------|---------------|
-        | 0a bc de f0  | 00 00 00 17  |  00 00 00 00   |    00 00 00 00    |       c8 00       |     64 14     |  00 00 00 00  |
+      | Magic       | Message ID  | Message Length | Encryption Offset | Status Code | Message Class | Binary Offset |
+      | ----------- | ----------- | -------------- | ----------------- | ----------- | ------------- | ------------- |
+      | 0a bc de f0 | 00 00 00 17 | 00 00 00 00    | 00 00 00 00       | c8 00       | 64 14         | 00 00 00 00   |
 
 - 25: `<VideoInput>` (write)
 
@@ -431,9 +432,9 @@ Message have zero to two payloads.
 
     - Header
 
-        |    Magic     |  Message ID  | Message Length | Encryption Offset |    Status Code    | Message Class | Payload Offset |
-        |--------------|--------------|----------------|-------------------|-------------------|---------------|---------------|
-        | 0a bc de f0  | 00 00 00 19  |  00 00 05 c2   |    64 00 00 00    |       00 00       |     64 14     |  00 00 00 68  |
+      | Magic       | Message ID  | Message Length | Encryption Offset | Status Code | Message Class | Payload Offset |
+      | ----------- | ----------- | -------------- | ----------------- | ----------- | ------------- | -------------- |
+      | 0a bc de f0 | 00 00 00 19 | 00 00 05 c2    | 64 00 00 00       | 00 00       | 64 14         | 00 00 00 68    |
 
     - Extension
 
@@ -532,10 +533,9 @@ Message have zero to two payloads.
 
     - Header
 
-        |    Magic     |  Message ID  | Message Length | Encryption Offset |    Status Code    | Message Class | Payload Offset |
-        |--------------|--------------|----------------|-------------------|-------------------|---------------|---------------|
-        | 0a bc de f0  | 00 00 00 19  |  00 00 00 00   |    64 00 00 00    |       c8 00       |     00 00     |  00 00 00 00  |
-
+      | Magic       | Message ID  | Message Length | Encryption Offset | Status Code | Message Class | Payload Offset |
+      | ----------- | ----------- | -------------- | ----------------- | ----------- | ------------- | -------------- |
+      | 0a bc de f0 | 00 00 00 19 | 00 00 00 00    | 64 00 00 00       | c8 00       | 00 00         | 00 00 00 00    |
 
 - 26: `<VideoInput>`
 
@@ -543,9 +543,9 @@ Message have zero to two payloads.
 
     - Header
 
-        |    Magic     |  Message ID  | Message Length | Encryption Offset |    Status Code    | Message Class | Payload Offset |
-        |--------------|--------------|----------------|-------------------|-------------------|---------------|---------------|
-        | 0a bc de f0  | 00 00 00 1a  |  00 00 00 68   |    2d 00 00 00    |       00 00       |     64 14     |  00 00 00 68  |
+      | Magic       | Message ID  | Message Length | Encryption Offset | Status Code | Message Class | Payload Offset |
+      | ----------- | ----------- | -------------- | ----------------- | ----------- | ------------- | -------------- |
+      | 0a bc de f0 | 00 00 00 1a | 00 00 00 68    | 2d 00 00 00       | 00 00       | 64 14         | 00 00 00 68    |
 
     - Extension
 
@@ -560,9 +560,9 @@ Message have zero to two payloads.
 
     - Header
 
-        |    Magic     |  Message ID  | Message Length | Encryption Offset |    Status Code    | Message Class | Payload Offset |
-        |--------------|--------------|----------------|-------------------|-------------------|---------------|---------------|
-        | 0a bc de f0  | 00 00 00 1a  |  00 00 05 7c   |    2d 00 00 00    |       c8 00       |     00 00     |  00 00 00 00  |
+      | Magic       | Message ID  | Message Length | Encryption Offset | Status Code | Message Class | Payload Offset |
+      | ----------- | ----------- | -------------- | ----------------- | ----------- | ------------- | -------------- |
+      | 0a bc de f0 | 00 00 00 1a | 00 00 05 7c    | 2d 00 00 00       | c8 00       | 00 00         | 00 00 00 00    |
 
     - Payload
 
@@ -655,20 +655,20 @@ Message have zero to two payloads.
 
     - Header
 
-        |    Magic     |  Message ID  | Message Length | Encryption Offset |    Status Code    | Message Class | Payload Offset |
-        |--------------|--------------|----------------|-------------------|-------------------|---------------|---------------|
-        | 0a bc de f0  | 00 00 00 1f  |  00 00 00 00   |    05 00 00 00    |       00 00       |     64 14     |  00 00 00 00  |
+      | Magic       | Message ID  | Message Length | Encryption Offset | Status Code | Message Class | Payload Offset |
+      | ----------- | ----------- | -------------- | ----------------- | ----------- | ------------- | -------------- |
+      | 0a bc de f0 | 00 00 00 1f | 00 00 00 00    | 05 00 00 00       | 00 00       | 64 14         | 00 00 00 00    |
 
   - Camera
 
     - Header
 
-        |    Magic     |  Message ID  | Message Length | Encryption Offset |    Status Code    | Message Class | Payload Offset |
-        |--------------|--------------|----------------|-------------------|-------------------|---------------|---------------|
-        | 0a bc de f0  | 00 00 00 1f  |  00 00 00 00   |    05 00 00 00    |       c8 00       |     00 00     |  00 00 00 00  |
+      | Magic       | Message ID  | Message Length | Encryption Offset | Status Code | Message Class | Payload Offset |
+      | ----------- | ----------- | -------------- | ----------------- | ----------- | ------------- | -------------- |
+      | 0a bc de f0 | 00 00 00 1f | 00 00 00 00    | 05 00 00 00       | c8 00       | 00 00         | 00 00 00 00    |
 
   - **Notes:** Some cameras will not send message 33 to the client until
-  after this msg has been received
+    after this msg has been received
 
 - 33: `<AlarmEventList>`
 
@@ -676,9 +676,9 @@ Message have zero to two payloads.
 
     - Header
 
-        |    Magic     |  Message ID  | Message Length | Encryption Offset |    Status Code    | Message Class | Payload Offset |
-        |--------------|--------------|----------------|-------------------|-------------------|---------------|---------------|
-        | 0a bc de f0  | 00 00 00 21  |  00 00 00 f0   |    05 00 00 00    |       c8 00       |     00 00     |  00 00 00 00  |
+      | Magic       | Message ID  | Message Length | Encryption Offset | Status Code | Message Class | Payload Offset |
+      | ----------- | ----------- | -------------- | ----------------- | ----------- | ------------- | -------------- |
+      | 0a bc de f0 | 00 00 00 21 | 00 00 00 f0    | 05 00 00 00       | c8 00       | 00 00         | 00 00 00 00    |
 
     - Payload
 
@@ -696,15 +696,97 @@ Message have zero to two payloads.
     </body>
     ```
 
+- 42: `<Email>`
+
+  - Client
+
+    Standard header only
+
+  - Camera
+
+    - XML in main payload
+
+    ```xml
+    <?xml version="1.0" encoding="UTF-8" ?>
+    <body>
+    <Email version="1.1">
+    <smtpServer>smtp.gmail.com</smtpServer>
+    <userName></userName>
+    <senderMaxLen>127</senderMaxLen>
+    <password></password>
+    <address1></address1>
+    <address2></address2>
+    <address3></address3>
+    <sendNickname></sendNickname>
+    <smtpPort>465</smtpPort>
+    <attachment>1</attachment>
+    <attachmentType>picture</attachmentType>
+    <textType>withText</textType>
+    <ssl>1</ssl>
+    <interval>30</interval>
+    </Email>
+    </body>
+    ```
+
+- 43: `<Email> (write)`
+
+  - Client
+    Usual header
+
+    - Main (gmail)
+
+      ```xml
+      <?xml version="1.0" encoding="UTF-8" ?>
+      <body>
+      <Email version="1.1">
+      <smtpServer>smtp.gmail.com</smtpServer>
+      <userName>abc@b.com</userName>
+      <password>as</password>
+      <address1>abc@b.com</address1>
+      <address2></address2>
+      <address3></address3>
+      <smtpPort>465</smtpPort>
+      <sendNickname>bname</sendNickname>
+      <attachment>1</attachment>
+      <attachmentType>picture</attachmentType>
+      <textType>withText</textType>
+      <ssl>1</ssl>
+      <interval>30</interval>
+      </Email>
+      </body>
+      ```
+
+    - Main (Other)
+      ```xml
+      <?xml version="1.0" encoding="UTF-8" ?>
+      <body>
+      <Email version="1.1">
+      <smtpServer>test</smtpServer>
+      <userName>abc@b.com</userName>
+      <password>as</password>
+      <address1>abc@b.com</address1>
+      <address2></address2>
+      <address3></address3>
+      <smtpPort>465</smtpPort>
+      <sendNickname>bname</sendNickname>
+      <attachment>1</attachment>
+      <attachmentType>picture</attachmentType>
+      <textType>withText</textType>
+      <ssl>1</ssl>
+      <interval>30</interval>
+      </Email>
+      </body>
+      ```
+
 - 44: `<OsdChannelName>`
 
   - Client
 
     - Header
 
-        |    Magic     |  Message ID  | Message Length | Encryption Offset |    Status Code    | Message Class | Payload Offset |
-        |--------------|--------------|----------------|-------------------|-------------------|---------------|---------------|
-        | 0a bc de f0  | 00 00 00 2c  |  00 00 00 68   |    30 00 00 00    |       00 00       |     64 14     |  00 00 00 68  |
+      | Magic       | Message ID  | Message Length | Encryption Offset | Status Code | Message Class | Payload Offset |
+      | ----------- | ----------- | -------------- | ----------------- | ----------- | ------------- | -------------- |
+      | 0a bc de f0 | 00 00 00 2c | 00 00 00 68    | 30 00 00 00       | 00 00       | 64 14         | 00 00 00 68    |
 
     - Extension
 
@@ -719,9 +801,9 @@ Message have zero to two payloads.
 
     - Header
 
-        |    Magic     |  Message ID  | Message Length | Encryption Offset |    Status Code    | Message Class | Payload Offset |
-        |--------------|--------------|----------------|-------------------|-------------------|---------------|---------------|
-        | 0a bc de f0  | 00 00 00 2c  |  00 00 01 df   |    30 00 00 00    |       c8 00       |     00 00     |  00 00 00 00  |
+      | Magic       | Message ID  | Message Length | Encryption Offset | Status Code | Message Class | Payload Offset |
+      | ----------- | ----------- | -------------- | ----------------- | ----------- | ------------- | -------------- |
+      | 0a bc de f0 | 00 00 00 2c | 00 00 01 df    | 30 00 00 00       | c8 00       | 00 00         | 00 00 00 00    |
 
     - Payload
 
@@ -755,9 +837,9 @@ Message have zero to two payloads.
 
     - Header
 
-        |    Magic     |  Message ID  | Message Length | Encryption Offset |    Status Code    | Message Class | Payload Offset |
-        |--------------|--------------|----------------|-------------------|-------------------|---------------|---------------|
-        | 0a bc de f0  | 00 00 00 2d  |  00 00 02 23   |    32 00 00 00    |       00 00       |     64 14     |  00 00 00 68  |
+      | Magic       | Message ID  | Message Length | Encryption Offset | Status Code | Message Class | Payload Offset |
+      | ----------- | ----------- | -------------- | ----------------- | ----------- | ------------- | -------------- |
+      | 0a bc de f0 | 00 00 00 2d | 00 00 02 23    | 32 00 00 00       | 00 00       | 64 14         | 00 00 00 68    |
 
     - Extension
 
@@ -796,9 +878,9 @@ Message have zero to two payloads.
 
     - Header
 
-        |    Magic     |  Message ID  | Message Length | Encryption Offset |    Status Code    | Message Class | Payload Offset |
-        |--------------|--------------|----------------|-------------------|-------------------|---------------|---------------|
-        | 0a bc de f0  | 00 00 00 2d  |  00 00 00 00   |    32 00 00 00    |       c8 00       |     00 00     |  00 00 00 00  |
+      | Magic       | Message ID  | Message Length | Encryption Offset | Status Code | Message Class | Payload Offset |
+      | ----------- | ----------- | -------------- | ----------------- | ----------- | ------------- | -------------- |
+      | 0a bc de f0 | 00 00 00 2d | 00 00 00 00    | 32 00 00 00       | c8 00       | 00 00         | 00 00 00 00    |
 
 - 52: `<Shelter>`
 
@@ -806,9 +888,9 @@ Message have zero to two payloads.
 
     - Header
 
-        |    Magic     |  Message ID  | Message Length | Encryption Offset |    Status Code    | Message Class | Payload Offset |
-        |--------------|--------------|----------------|-------------------|-------------------|---------------|---------------|
-        | 0a bc de f0  | 00 00 00 34  |  00 00 00 68   |    36 00 00 00    |       00 00       |     64 14     |  00 00 00 68  |
+      | Magic       | Message ID  | Message Length | Encryption Offset | Status Code | Message Class | Payload Offset |
+      | ----------- | ----------- | -------------- | ----------------- | ----------- | ------------- | -------------- |
+      | 0a bc de f0 | 00 00 00 34 | 00 00 00 68    | 36 00 00 00       | 00 00       | 64 14         | 00 00 00 68    |
 
     - Extension
 
@@ -823,9 +905,9 @@ Message have zero to two payloads.
 
     - Header
 
-        |    Magic     |  Message ID  | Message Length | Encryption Offset |    Status Code    | Message Class | Payload Offset |
-        |--------------|--------------|----------------|-------------------|-------------------|---------------|---------------|
-        | 0a bc de f0  | 00 00 00 34  |  00 00 00 96   |    36 00 00 00    |       c8 00       |     00 00     |  00 00 00 00  |
+      | Magic       | Message ID  | Message Length | Encryption Offset | Status Code | Message Class | Payload Offset |
+      | ----------- | ----------- | -------------- | ----------------- | ----------- | ------------- | -------------- |
+      | 0a bc de f0 | 00 00 00 34 | 00 00 00 96    | 36 00 00 00       | c8 00       | 00 00         | 00 00 00 00    |
 
     - Payload
 
@@ -846,9 +928,9 @@ Message have zero to two payloads.
 
     - Header
 
-        |    Magic     |  Message ID  | Message Length | Encryption Offset |    Status Code    | Message Class | Payload Offset |
-        |--------------|--------------|----------------|-------------------|-------------------|---------------|---------------|
-        | 0a bc de f0  | 00 00 00 35  |  00 00 01 d7   |    38 00 00 00    |       00 00       |     64 14     |  00 00 00 68  |
+      | Magic       | Message ID  | Message Length | Encryption Offset | Status Code | Message Class | Payload Offset |
+      | ----------- | ----------- | -------------- | ----------------- | ----------- | ------------- | -------------- |
+      | 0a bc de f0 | 00 00 00 35 | 00 00 01 d7    | 38 00 00 00       | 00 00       | 64 14         | 00 00 00 68    |
 
     - Extension
 
@@ -893,9 +975,9 @@ Message have zero to two payloads.
 
     - Header
 
-        |    Magic     |  Message ID  | Message Length | Encryption Offset |    Status Code    | Message Class | Payload Offset |
-        |--------------|--------------|----------------|-------------------|-------------------|---------------|---------------|
-        | 0a bc de f0  | 00 00 00 35  |  00 00 00 00   |    38 00 00 00    |       c8 00       |     00 00     |  00 00 00 00  |
+      | Magic       | Message ID  | Message Length | Encryption Offset | Status Code | Message Class | Payload Offset |
+      | ----------- | ----------- | -------------- | ----------------- | ----------- | ------------- | -------------- |
+      | 0a bc de f0 | 00 00 00 35 | 00 00 00 00    | 38 00 00 00       | c8 00       | 00 00         | 00 00 00 00    |
 
 - 54: `<RecordCfg>`
 
@@ -903,9 +985,9 @@ Message have zero to two payloads.
 
     - Header
 
-        |    Magic     |  Message ID  | Message Length | Encryption Offset |    Status Code    | Message Class | Payload Offset |
-        |--------------|--------------|----------------|-------------------|-------------------|---------------|---------------|
-        | 0a bc de f0  | 00 00 00 36  |  00 00 00 68   |    14 00 00 00    |       00 00       |     64 14     |  00 00 00 68  |
+      | Magic       | Message ID  | Message Length | Encryption Offset | Status Code | Message Class | Payload Offset |
+      | ----------- | ----------- | -------------- | ----------------- | ----------- | ------------- | -------------- |
+      | 0a bc de f0 | 00 00 00 36 | 00 00 00 68    | 14 00 00 00       | 00 00       | 64 14         | 00 00 00 68    |
 
     - Extension
 
@@ -920,9 +1002,9 @@ Message have zero to two payloads.
 
     - Header
 
-        |    Magic     |  Message ID  | Message Length | Encryption Offset |    Status Code    | Message Class | Payload Offset |
-        |--------------|--------------|----------------|-------------------|-------------------|---------------|---------------|
-        | 0a bc de f0  | 00 00 00 36  |  00 00 00 ed   |    14 00 00 00    |       c8 00       |     00 00     |  00 00 00 00  |
+      | Magic       | Message ID  | Message Length | Encryption Offset | Status Code | Message Class | Payload Offset |
+      | ----------- | ----------- | -------------- | ----------------- | ----------- | ------------- | -------------- |
+      | 0a bc de f0 | 00 00 00 36 | 00 00 00 ed    | 14 00 00 00       | c8 00       | 00 00         | 00 00 00 00    |
 
     - Payload
 
@@ -945,9 +1027,9 @@ Message have zero to two payloads.
 
     - Header
 
-        |    Magic     |  Message ID  | Message Length | Encryption Offset |    Status Code    | Message Class | Payload Offset |
-        |--------------|--------------|----------------|-------------------|-------------------|---------------|---------------|
-        | 0a bc de f0  | 00 00 00 37  |  00 00 01 3b   |    16 00 00 00    |       00 00       |     64 14     |  00 00 00 68  |
+      | Magic       | Message ID  | Message Length | Encryption Offset | Status Code | Message Class | Payload Offset |
+      | ----------- | ----------- | -------------- | ----------------- | ----------- | ------------- | -------------- |
+      | 0a bc de f0 | 00 00 00 37 | 00 00 01 3b    | 16 00 00 00       | 00 00       | 64 14         | 00 00 00 68    |
 
     - Extension
 
@@ -976,9 +1058,9 @@ Message have zero to two payloads.
 
     - Header
 
-        |    Magic     |  Message ID  | Message Length | Encryption Offset |    Status Code    | Message Class | Payload Offset |
-        |--------------|--------------|----------------|-------------------|-------------------|---------------|---------------|
-        | 0a bc de f0  | 00 00 00 37  |  00 00 00 00   |    16 00 00 00    |       c8 00       |     00 00     |  00 00 00 00  |
+      | Magic       | Message ID  | Message Length | Encryption Offset | Status Code | Message Class | Payload Offset |
+      | ----------- | ----------- | -------------- | ----------------- | ----------- | ------------- | -------------- |
+      | 0a bc de f0 | 00 00 00 37 | 00 00 00 00    | 16 00 00 00       | c8 00       | 00 00         | 00 00 00 00    |
 
 - 56: `<Compression>`
 
@@ -986,9 +1068,9 @@ Message have zero to two payloads.
 
     - Header
 
-        |    Magic     |  Message ID  | Message Length | Encryption Offset |    Status Code    | Message Class | Payload Offset |
-        |--------------|--------------|----------------|-------------------|-------------------|---------------|---------------|
-        | 0a bc de f0  | 00 00 00 38  |  00 00 00 68   |    1d 00 00 00    |       00 00       |     64 14     |  00 00 00 68  |
+      | Magic       | Message ID  | Message Length | Encryption Offset | Status Code | Message Class | Payload Offset |
+      | ----------- | ----------- | -------------- | ----------------- | ----------- | ------------- | -------------- |
+      | 0a bc de f0 | 00 00 00 38 | 00 00 00 68    | 1d 00 00 00       | 00 00       | 64 14         | 00 00 00 68    |
 
     - Extension
 
@@ -1003,9 +1085,9 @@ Message have zero to two payloads.
 
     - Header
 
-        |    Magic     |  Message ID  | Message Length | Encryption Offset |    Status Code    | Message Class | Payload Offset |
-        |--------------|--------------|----------------|-------------------|-------------------|---------------|---------------|
-        | 0a bc de f0  | 00 00 00 38  |  00 00 03 61   |    1d 00 00 00    |       c8 00       |     00 00     |  00 00 00 00  |
+      | Magic       | Message ID  | Message Length | Encryption Offset | Status Code | Message Class | Payload Offset |
+      | ----------- | ----------- | -------------- | ----------------- | ----------- | ------------- | -------------- |
+      | 0a bc de f0 | 00 00 00 38 | 00 00 03 61    | 1d 00 00 00       | c8 00       | 00 00         | 00 00 00 00    |
 
     - Payload
 
@@ -1055,9 +1137,9 @@ Message have zero to two payloads.
 
     - Header
 
-        |    Magic     |  Message ID  | Message Length | Encryption Offset |    Status Code    | Message Class | Payload Offset |
-        |--------------|--------------|----------------|-------------------|-------------------|---------------|---------------|
-        | 0a bc de f0  | 00 00 00 39  |  00 00 02 bc   |    1f 00 00 00    |       00 00       |     64 14     |  00 00 00 68  |
+      | Magic       | Message ID  | Message Length | Encryption Offset | Status Code | Message Class | Payload Offset |
+      | ----------- | ----------- | -------------- | ----------------- | ----------- | ------------- | -------------- |
+      | 0a bc de f0 | 00 00 00 39 | 00 00 02 bc    | 1f 00 00 00       | 00 00       | 64 14         | 00 00 00 68    |
 
     - Extension
 
@@ -1103,9 +1185,9 @@ Message have zero to two payloads.
 
     - Header
 
-        |    Magic     |  Message ID  | Message Length | Encryption Offset |    Status Code    | Message Class | Payload Offset |
-        |--------------|--------------|----------------|-------------------|-------------------|---------------|---------------|
-        | 0a bc de f0  | 00 00 00 39  |  00 00 00 00   |    1f 00 00 00    |       c8 00       |     00 00     |  00 00 00 00  |
+      | Magic       | Message ID  | Message Length | Encryption Offset | Status Code | Message Class | Payload Offset |
+      | ----------- | ----------- | -------------- | ----------------- | ----------- | ------------- | -------------- |
+      | 0a bc de f0 | 00 00 00 39 | 00 00 00 00    | 1f 00 00 00       | c8 00       | 00 00         | 00 00 00 00    |
 
 - 58: `<AbilitySupport>`
 
@@ -1113,9 +1195,9 @@ Message have zero to two payloads.
 
     - Header
 
-        |    Magic     |  Message ID  | Message Length | Encryption Offset |    Status Code    | Message Class | Payload Offset |
-        |--------------|--------------|----------------|-------------------|-------------------|---------------|---------------|
-        | 0a bc de f0  | 00 00 00 3a  |  00 00 00 6b   |    03 00 00 00    |       00 00       |     64 14     |  00 00 00 6b  |
+      | Magic       | Message ID  | Message Length | Encryption Offset | Status Code | Message Class | Payload Offset |
+      | ----------- | ----------- | -------------- | ----------------- | ----------- | ------------- | -------------- |
+      | 0a bc de f0 | 00 00 00 3a | 00 00 00 6b    | 03 00 00 00       | 00 00       | 64 14         | 00 00 00 6b    |
 
     - Extension
 
@@ -1130,9 +1212,9 @@ Message have zero to two payloads.
 
     - Header
 
-        |    Magic     |  Message ID  | Message Length | Encryption Offset |    Status Code    | Message Class | Payload Offset |
-        |--------------|--------------|----------------|-------------------|-------------------|---------------|---------------|
-        | 0a bc de f0  | 00 00 00 3a  |  00 00 03 a4   |    03 00 00 00    |       c8 00       |     00 00     |  00 00 00 00  |
+      | Magic       | Message ID  | Message Length | Encryption Offset | Status Code | Message Class | Payload Offset |
+      | ----------- | ----------- | -------------- | ----------------- | ----------- | ------------- | -------------- |
+      | 0a bc de f0 | 00 00 00 3a | 00 00 03 a4    | 03 00 00 00       | c8 00       | 00 00         | 00 00 00 00    |
 
     - Payload
 
@@ -1183,78 +1265,175 @@ Message have zero to two payloads.
     </UserList>
     </body>
     ```
-  - **Notes:** The passwords are not sent in some models of cameras   namely
-    RLC-410 4mp, RLC-410 5mp, RLC-520 (fw 200710) in these cases the passwords
-    are blank. In some older cameras that do not use encryption at all these
-    passwords are completely visible to any network sniffers. Even the "encrypted"
-    cameras only have weak encryption that is easily broken since the
-    decryption key is fixed and well-known.
 
-    - 67: `<ConfigFileInfo> (FW Upgrade)`
+  - **Notes:** The passwords are not sent in some models of cameras namely
+    RLC-410 4mp, RLC-410 5mp, RLC-520 (fw 200710), RLC-811A in these cases the
+    passwords are blank. In some older cameras that do not use encryption at
+    all these passwords are completely visible to any network sniffers. Even
+    the "encrypted" cameras only have weak encryption that is easily broken
+    since the decryption key is fixed and well-known.
 
-      - Client
+- 59: `<UserList>`
 
-        - Header
+  - Client
 
-            |    Magic     |  Message ID  | Message Length | Encryption Offset |    Status Code    | Message Class | Payload Offset |
-            |--------------|--------------|----------------|-------------------|-------------------|---------------|---------------|
-            | 0a bc de f0  | 00 00 00 43  |  00 00 01 00   |    00 00 00 00    |       00 00       |     64 14     |  00 00 00 00  |
+    - Header: Standard header
 
-        - Extension
+    - Extension
 
-        ```xml
-        <?xml version="1.0" encoding="UTF-8" ?>
-        <body>
-        <ConfigFileInfo version="1.1">
-        <fileName>FIRMWAREFILE.pak</fileName>
-        <fileSize>SIZE_IN_BYTES</fileSize>
-        <updateParameter>0</updateParameter>
-        </ConfigFileInfo>
-        </body>
-        ```
+    ```xml
+    <?xml version="1.0" encoding="UTF-8" ?>
+    <Extension version="1.1">
+    <userName>admin</userName>
+    </Extension>
+    ```
 
-      - **Notes:** updateParameter refers to updating the settings. If 1 it will restore factory settings. If 0 it will keep current.
+  - Camera
 
-      - Camera
+    - Header: Standard header
 
-        - Header
+    - Payload — Changing the password of testUser
 
-            |    Magic     |  Message ID  | Message Length | Encryption Offset |    Status Code    | Message Class | Payload Offset |
-            |--------------|--------------|----------------|-------------------|-------------------|---------------|---------------|
-            | 0a bc de f0  | 00 00 00 43  |  00 00 00 00   |    00 00 00 00    |       c8 00       |     00 00     |  00 00 00 00  |
+    ```xml
+    <?xml version="1.0" encoding="UTF-8" ?>
+    <body>
+    <UserList version="1.1">
+    <User>
+    <userName>admin</userName>
+    <password>password12</password>
+    <userLevel>1</userLevel>
+    <userSetState>none</userSetState>
+    </User>
+    <User>
+    <userName>testUser</userName>
+    <password>newPass</password>
+    <userLevel>0</userLevel>
+    <userSetState>modify</userSetState>
+    </User>
+    </UserList>
+    </body>
+    ```
 
-      - Client
+    - Payload — creating a user
 
-        - Header
+    ```xml
+    <?xml version="1.0" encoding="UTF-8" ?>
+    <body>
+    <UserList version="1.1">
+    <User>
+    <userName>admin</userName>
+    <password>password12</password>
+    <userLevel>1</userLevel>
+    <userSetState>none</userSetState>
+    </User>
+    <User>
+    <userName>testUser</userName>
+    <password>testPass</password>
+    <userLevel>0</userLevel>
+    <userSetState>add</userSetState>
+    </User>
+    </UserList>
+    </body>
+    ```
 
-            |    Magic     |  Message ID  | Message Length | Encryption Offset |    Status Code    | Message Class | Payload Offset |
-            |--------------|--------------|----------------|-------------------|-------------------|---------------|---------------|
-            | 0a bc de f0  | 00 00 00 43  |  00 00 94 58   |    00 00 00 00    |       00 00       |     64 14     |  00 00 00 6a  |
+    - Payload — deleting a user
 
-        - Extension
+    ```xml
+    <?xml version="1.0" encoding="UTF-8" ?>
+    <body>
+    <UserList version="1.1">
+    <User>
+    <userName>admin</userName>
+    <password>password12</password>
+    <userLevel>1</userLevel>
+    <userSetState>none</userSetState>
+    </User>
+    <User>
+    <userName>testUser</userName>
+    <password>newPass</password>
+    <userLevel>0</userLevel>
+    <userSetState>delete</userSetState>
+    </User>
+    </UserList>
+    </body>
+    ```
 
-        ```xml
-        <?xml version="1.0" encoding="UTF-8" ?>
-        <Extension version="1.1">
-        <binaryData>1</binaryData>
-        </Extension>
-        ```
+  - **Notes:** The passwords are not sent in some models of cameras namely
+    RLC-410 4mp, RLC-410 5mp, RLC-520 (fw 200710), RLC-811A in these cases the
+    passwords are blank. In some older cameras that do not use encryption at
+    all these passwords are completely visible to any network sniffers. Even
+    the "encrypted" cameras only have weak encryption that is easily broken
+    since the decryption key is fixed and well-known.
+  - **Notes:** The password field seems to only be needed when creating a user
+    or changing a users password.
+  - **Notes:** It does not appear like userLevel is modifiable (at least on
+    RLC-811A)
 
-        - Payload
+- 67: `<ConfigFileInfo> (FW Upgrade)`
 
-          This contains binary data of the file but stops once the message size reaches
-          38000 bytes and continues in another packet. There does not appear to
-          be a checksum or hash and this part contains only the raw bytes of the file.
+  - Client
 
-      - Camera
+    - Header
 
-        - Header
+      | Magic       | Message ID  | Message Length | Encryption Offset | Status Code | Message Class | Payload Offset |
+      | ----------- | ----------- | -------------- | ----------------- | ----------- | ------------- | -------------- |
+      | 0a bc de f0 | 00 00 00 43 | 00 00 01 00    | 00 00 00 00       | 00 00       | 64 14         | 00 00 00 00    |
 
-            |    Magic     |  Message ID  | Message Length | Encryption Offset |    Status Code    | Message Class | Payload Offset |
-            |--------------|--------------|----------------|-------------------|-------------------|---------------|---------------|
-            | 0a bc de f0  | 00 00 00 43  |  00 00 00 00   |    00 00 00 00    |       c8 00       |     00 00     |  00 00 00 00  |
+    - Extension
 
-      - **Notes:** Last two messages repeat until all data is sent
+    ```xml
+    <?xml version="1.0" encoding="UTF-8" ?>
+    <body>
+    <ConfigFileInfo version="1.1">
+    <fileName>FIRMWAREFILE.pak</fileName>
+    <fileSize>SIZE_IN_BYTES</fileSize>
+    <updateParameter>0</updateParameter>
+    </ConfigFileInfo>
+    </body>
+    ```
+
+  - **Notes:** updateParameter refers to updating the settings. If 1 it will restore factory settings. If 0 it will keep current.
+
+  - Camera
+
+    - Header
+
+      | Magic       | Message ID  | Message Length | Encryption Offset | Status Code | Message Class | Payload Offset |
+      | ----------- | ----------- | -------------- | ----------------- | ----------- | ------------- | -------------- |
+      | 0a bc de f0 | 00 00 00 43 | 00 00 00 00    | 00 00 00 00       | c8 00       | 00 00         | 00 00 00 00    |
+
+  - Client
+
+    - Header
+
+      | Magic       | Message ID  | Message Length | Encryption Offset | Status Code | Message Class | Payload Offset |
+      | ----------- | ----------- | -------------- | ----------------- | ----------- | ------------- | -------------- |
+      | 0a bc de f0 | 00 00 00 43 | 00 00 94 58    | 00 00 00 00       | 00 00       | 64 14         | 00 00 00 6a    |
+
+    - Extension
+
+    ```xml
+    <?xml version="1.0" encoding="UTF-8" ?>
+    <Extension version="1.1">
+    <binaryData>1</binaryData>
+    </Extension>
+    ```
+
+    - Payload
+
+      This contains binary data of the file but stops once the message size reaches
+      38000 bytes and continues in another packet. There does not appear to
+      be a checksum or hash and this part contains only the raw bytes of the file.
+
+  - Camera
+
+    - Header
+
+      | Magic       | Message ID  | Message Length | Encryption Offset | Status Code | Message Class | Payload Offset |
+      | ----------- | ----------- | -------------- | ----------------- | ----------- | ------------- | -------------- |
+      | 0a bc de f0 | 00 00 00 43 | 00 00 00 00    | 00 00 00 00       | c8 00       | 00 00         | 00 00 00 00    |
+
+  - **Notes:** Last two messages repeat until all data is sent
 
 - 76: `<Ip>`
 
@@ -1262,17 +1441,17 @@ Message have zero to two payloads.
 
     - Header
 
-        |    Magic     |  Message ID  | Message Length | Encryption Offset |    Status Code    | Message Class | Payload Offset |
-        |--------------|--------------|----------------|-------------------|-------------------|---------------|---------------|
-        | 0a bc de f0  | 00 00 00 4c  |  00 00 00 00   |    22 00 00 00    |       00 00       |     64 14     |  00 00 00 00  |
+      | Magic       | Message ID  | Message Length | Encryption Offset | Status Code | Message Class | Payload Offset |
+      | ----------- | ----------- | -------------- | ----------------- | ----------- | ------------- | -------------- |
+      | 0a bc de f0 | 00 00 00 4c | 00 00 00 00    | 22 00 00 00       | 00 00       | 64 14         | 00 00 00 00    |
 
   - Camera
 
     - Header
 
-        |    Magic     |  Message ID  | Message Length | Encryption Offset |    Status Code    | Message Class | Payload Offset |
-        |--------------|--------------|----------------|-------------------|-------------------|---------------|---------------|
-        | 0a bc de f0  | 00 00 00 4c  |  00 00 01 69   |    22 00 00 00    |       c8 00       |     00 00     |  00 00 00 00  |
+      | Magic       | Message ID  | Message Length | Encryption Offset | Status Code | Message Class | Payload Offset |
+      | ----------- | ----------- | -------------- | ----------------- | ----------- | ------------- | -------------- |
+      | 0a bc de f0 | 00 00 00 4c | 00 00 01 69    | 22 00 00 00       | c8 00       | 00 00         | 00 00 00 00    |
 
     - Payload
 
@@ -1304,9 +1483,9 @@ Message have zero to two payloads.
 
     - Header
 
-        |    Magic     |  Message ID  | Message Length | Encryption Offset |    Status Code    | Message Class | Payload Offset |
-        |--------------|--------------|----------------|-------------------|-------------------|---------------|---------------|
-        | 0a bc de f0  | 00 00 00 4d  |  00 00 01 5b   |    25 00 00 00    |       00 00       |     64 14     |  00 00 00 00  |
+      | Magic       | Message ID  | Message Length | Encryption Offset | Status Code | Message Class | Payload Offset |
+      | ----------- | ----------- | -------------- | ----------------- | ----------- | ------------- | -------------- |
+      | 0a bc de f0 | 00 00 00 4d | 00 00 01 5b    | 25 00 00 00       | 00 00       | 64 14         | 00 00 00 00    |
 
     - Payload
 
@@ -1336,9 +1515,9 @@ Message have zero to two payloads.
 
     - Header
 
-        |    Magic     |  Message ID  | Message Length | Encryption Offset |    Status Code    | Message Class | Payload Offset |
-        |--------------|--------------|----------------|-------------------|-------------------|---------------|---------------|
-        | 0a bc de f0  | 00 00 00 4d  |  00 00 00 00   |    14 00 00 00    |       c8 00       |     00 00     |  00 00 00 00  |
+      | Magic       | Message ID  | Message Length | Encryption Offset | Status Code | Message Class | Payload Offset |
+      | ----------- | ----------- | -------------- | ----------------- | ----------- | ------------- | -------------- |
+      | 0a bc de f0 | 00 00 00 4d | 00 00 00 00    | 14 00 00 00       | c8 00       | 00 00         | 00 00 00 00    |
 
 - 78: `<VideoInput>`
 
@@ -1346,9 +1525,9 @@ Message have zero to two payloads.
 
     - Header
 
-        |    Magic     |  Message ID  | Message Length | Encryption Offset |    Status Code    | Message Class | Payload Offset |
-        |--------------|--------------|----------------|-------------------|-------------------|---------------|---------------|
-        | 0a bc de f0  | 00 00 00 4e  |  00 00 00 d3   |    1b 00 00 00    |       c8 00       |     00 00     |  00 00 00 00  |
+      | Magic       | Message ID  | Message Length | Encryption Offset | Status Code | Message Class | Payload Offset |
+      | ----------- | ----------- | -------------- | ----------------- | ----------- | ------------- | -------------- |
+      | 0a bc de f0 | 00 00 00 4e | 00 00 00 d3    | 1b 00 00 00       | c8 00       | 00 00         | 00 00 00 00    |
 
     - Payload
 
@@ -1371,9 +1550,9 @@ Message have zero to two payloads.
 
     - Header
 
-        |    Magic     |  Message ID  | Message Length | Encryption Offset |    Status Code    | Message Class | Payload Offset |
-        |--------------|--------------|----------------|-------------------|-------------------|---------------|---------------|
-        | 0a bc de f0  | 00 00 00 4f  |  00 00 01 3b   |    1b 00 00 00    |       c8 00       |     00 00     |  00 00 00 00  |
+      | Magic       | Message ID  | Message Length | Encryption Offset | Status Code | Message Class | Payload Offset |
+      | ----------- | ----------- | -------------- | ----------------- | ----------- | ------------- | -------------- |
+      | 0a bc de f0 | 00 00 00 4f | 00 00 01 3b    | 1b 00 00 00       | c8 00       | 00 00         | 00 00 00 00    |
 
     - Payload
 
@@ -1399,17 +1578,17 @@ Message have zero to two payloads.
 
     - Header
 
-        |    Magic     |  Message ID  | Message Length | Encryption Offset |    Status Code    | Message Class | Payload Offset |
-        |--------------|--------------|----------------|-------------------|-------------------|---------------|---------------|
-        | 0a bc de f0  | 00 00 00 50  |  00 00 00 00   |    08 00 00 00    |       00 00       |     64 14     |  00 00 00 00  |
+      | Magic       | Message ID  | Message Length | Encryption Offset | Status Code | Message Class | Payload Offset |
+      | ----------- | ----------- | -------------- | ----------------- | ----------- | ------------- | -------------- |
+      | 0a bc de f0 | 00 00 00 50 | 00 00 00 00    | 08 00 00 00       | 00 00       | 64 14         | 00 00 00 00    |
 
   - Camera
 
     - Header
 
-        |    Magic     |  Message ID  | Message Length | Encryption Offset |    Status Code    | Message Class | Payload Offset |
-        |--------------|--------------|----------------|-------------------|-------------------|---------------|---------------|
-        | 0a bc de f0  | 00 00 00 50  |  00 00 01 f0   |    08 00 00 00    |       c8 00       |     00 00     |  00 00 00 00  |
+      | Magic       | Message ID  | Message Length | Encryption Offset | Status Code | Message Class | Payload Offset |
+      | ----------- | ----------- | -------------- | ----------------- | ----------- | ------------- | -------------- |
+      | 0a bc de f0 | 00 00 00 50 | 00 00 01 f0    | 08 00 00 00       | c8 00       | 00 00         | 00 00 00 00    |
 
     - Payload
 
@@ -1438,9 +1617,9 @@ Message have zero to two payloads.
 
     - Header
 
-        |    Magic     |  Message ID  | Message Length | Encryption Offset |    Status Code    | Message Class | Payload Offset |
-        |--------------|--------------|----------------|-------------------|-------------------|---------------|---------------|
-        | 0a bc de f0  | 00 00 00 51  |  00 00 00 68   |    19 00 00 00    |       00 00       |     64 14     |  00 00 00 68  |
+      | Magic       | Message ID  | Message Length | Encryption Offset | Status Code | Message Class | Payload Offset |
+      | ----------- | ----------- | -------------- | ----------------- | ----------- | ------------- | -------------- |
+      | 0a bc de f0 | 00 00 00 51 | 00 00 00 68    | 19 00 00 00       | 00 00       | 64 14         | 00 00 00 68    |
 
     - Extension
 
@@ -1455,9 +1634,9 @@ Message have zero to two payloads.
 
     - Header
 
-        |    Magic     |  Message ID  | Message Length | Encryption Offset |    Status Code    | Message Class | Payload Offset |
-        |--------------|--------------|----------------|-------------------|-------------------|---------------|---------------|
-        | 0a bc de f0  | 00 00 00 51  |  00 00 04 30   |    19 00 00 00    |       c8 00       |     00 00     |  00 00 00 00  |
+      | Magic       | Message ID  | Message Length | Encryption Offset | Status Code | Message Class | Payload Offset |
+      | ----------- | ----------- | -------------- | ----------------- | ----------- | ------------- | -------------- |
+      | 0a bc de f0 | 00 00 00 51 | 00 00 04 30    | 19 00 00 00       | c8 00       | 00 00         | 00 00 00 00    |
 
     - Payload
 
@@ -1526,9 +1705,9 @@ Message have zero to two payloads.
 
     - Header
 
-        |    Magic     |  Message ID  | Message Length | Encryption Offset |    Status Code    | Message Class | Payload Offset |
-        |--------------|--------------|----------------|-------------------|-------------------|---------------|---------------|
-        | 0a bc de f0  | 00 00 00 52  |  00 00 05 da   |    1a 00 00 00    |       00 00       |     64 14     |  00 00 00 68  |
+      | Magic       | Message ID  | Message Length | Encryption Offset | Status Code | Message Class | Payload Offset |
+      | ----------- | ----------- | -------------- | ----------------- | ----------- | ------------- | -------------- |
+      | 0a bc de f0 | 00 00 00 52 | 00 00 05 da    | 1a 00 00 00       | 00 00       | 64 14         | 00 00 00 68    |
 
     - Extension
 
@@ -1621,9 +1800,9 @@ Message have zero to two payloads.
 
     - Header
 
-        |    Magic     |  Message ID  | Message Length | Encryption Offset |    Status Code    | Message Class | Payload Offset |
-        |--------------|--------------|----------------|-------------------|-------------------|---------------|---------------|
-        | 0a bc de f0  | 00 00 00 52  |  00 00 00 00   |    1a 00 00 00    |       c8 00       |     00 00     |  00 00 00 00  |
+      | Magic       | Message ID  | Message Length | Encryption Offset | Status Code | Message Class | Payload Offset |
+      | ----------- | ----------- | -------------- | ----------------- | ----------- | ------------- | -------------- |
+      | 0a bc de f0 | 00 00 00 52 | 00 00 00 00    | 1a 00 00 00       | c8 00       | 00 00         | 00 00 00 00    |
 
 - 93: `<LinkType>`
 
@@ -1631,9 +1810,9 @@ Message have zero to two payloads.
 
     - Header
 
-        |    Magic     |  Message ID  | Message Length | Encryption Offset |    Status Code    | Message Class | Payload Offset |
-        |--------------|--------------|----------------|-------------------|-------------------|---------------|---------------|
-        | 0a bc de f0  | 00 00 00 5d  |  00 00 00 00   |    17 00 00 00    |       00  00      |     64 14     |  00 00 00 00  |
+      | Magic       | Message ID  | Message Length | Encryption Offset | Status Code | Message Class | Payload Offset |
+      | ----------- | ----------- | -------------- | ----------------- | ----------- | ------------- | -------------- |
+      | 0a bc de f0 | 00 00 00 5d | 00 00 00 00    | 17 00 00 00       | 00 00       | 64 14         | 00 00 00 00    |
 
 - 102: `<HDDInfoList>`
 
@@ -1641,17 +1820,17 @@ Message have zero to two payloads.
 
     - Header
 
-        |    Magic     |  Message ID  | Message Length | Encryption Offset |    Status Code    | Message Class | Payload Offset |
-        |--------------|--------------|----------------|-------------------|-------------------|---------------|---------------|
-        | 0a bc de f0  | 00 00 00 66  |  00 00 00 00   |    07 00 00 00    |       00 00       |     64 14     |  00 00 00 00  |
+      | Magic       | Message ID  | Message Length | Encryption Offset | Status Code | Message Class | Payload Offset |
+      | ----------- | ----------- | -------------- | ----------------- | ----------- | ------------- | -------------- |
+      | 0a bc de f0 | 00 00 00 66 | 00 00 00 00    | 07 00 00 00       | 00 00       | 64 14         | 00 00 00 00    |
 
   - Camera
 
     - Header
 
-        |    Magic     |  Message ID  | Message Length | Encryption Offset |    Status Code    | Message Class | Payload Offset |
-        |--------------|--------------|----------------|-------------------|-------------------|---------------|---------------|
-        | 0a bc de f0  | 00 00 00 66  |  00 00 00 55   |    07 00 00 00    |       c8 00       |     00 00     |  00 00 00 00  |
+      | Magic       | Message ID  | Message Length | Encryption Offset | Status Code | Message Class | Payload Offset |
+      | ----------- | ----------- | -------------- | ----------------- | ----------- | ------------- | -------------- |
+      | 0a bc de f0 | 00 00 00 66 | 00 00 00 55    | 07 00 00 00       | c8 00       | 00 00         | 00 00 00 00    |
 
     - Payload
 
@@ -1668,17 +1847,17 @@ Message have zero to two payloads.
 
     - Header
 
-        |    Magic     |  Message ID  | Message Length | Encryption Offset |    Status Code    | Message Class | Payload Offset |
-        |--------------|--------------|----------------|-------------------|-------------------|---------------|---------------|
-        | 0a bc de f0  | 00 00 00 68  |  00 00 00 00   |    0a 00 00 00    |       00 00       |     64 14     |  00 00 00 00  |
+      | Magic       | Message ID  | Message Length | Encryption Offset | Status Code | Message Class | Payload Offset |
+      | ----------- | ----------- | -------------- | ----------------- | ----------- | ------------- | -------------- |
+      | 0a bc de f0 | 00 00 00 68 | 00 00 00 00    | 0a 00 00 00       | 00 00       | 64 14         | 00 00 00 00    |
 
   - Camera
 
     - Header
 
-        |    Magic     |  Message ID  | Message Length | Encryption Offset |    Status Code    | Message Class | Payload Offset |
-        |--------------|--------------|----------------|-------------------|-------------------|---------------|---------------|
-        | 0a bc de f0  | 00 00 00 68  |  00 00 01 a5   |    0a 00 00 00    |       c8 00       |     00 00     |  00 00 00 00  |
+      | Magic       | Message ID  | Message Length | Encryption Offset | Status Code | Message Class | Payload Offset |
+      | ----------- | ----------- | -------------- | ----------------- | ----------- | ------------- | -------------- |
+      | 0a bc de f0 | 00 00 00 68 | 00 00 01 a5    | 0a 00 00 00       | c8 00       | 00 00         | 00 00 00 00    |
 
     - Payload
 
@@ -1737,31 +1916,33 @@ Message have zero to two payloads.
     - Camera:
 
     **Notes:** XML & Binary reply over mutliple packets:
+
     - Reply 1:
-        - Main:
-        ```xml
-        <?xml version="1.0" encoding="UTF-8" ?>
-        <body>
-        <Snap version="1.1">
-        <channelId>0</channelId>
-        <fileName>01_20230518140240.jpg</fileName>
-        <time>0</time>
-        <pictureSize>23644</pictureSize>
-        </Snap>
-        </body>
-        ```
+
+      - Main:
+
+      ```xml
+      <?xml version="1.0" encoding="UTF-8" ?>
+      <body>
+      <Snap version="1.1">
+      <channelId>0</channelId>
+      <fileName>01_20230518140240.jpg</fileName>
+      <time>0</time>
+      <pictureSize>23644</pictureSize>
+      </Snap>
+      </body>
+      ```
 
     - Reply 2:
-        - Meta:
-        ```xml
-        <?xml version="1.0" encoding="UTF-8" ?>
-        <Extension version="1.1">
-        <binaryData>1</binaryData>
-        </Extension>
-        ```
-        - Main:
+      - Meta:
+      ```xml
+      <?xml version="1.0" encoding="UTF-8" ?>
+      <Extension version="1.1">
+      <binaryData>1</binaryData>
+      </Extension>
+      ```
+      - Main:
         **Binary data containing the file may be broken over multiple packets**
-
 
 - 115: `<WifiSignal>`
 
@@ -1769,17 +1950,17 @@ Message have zero to two payloads.
 
     - Header
 
-        |    Magic     |  Message ID  | Message Length | Encryption Offset |    Status Code    | Message Class | Payload Offset |
-        |--------------|--------------|----------------|-------------------|-------------------|---------------|---------------|
-        | 0a bc de f0  | 00 00 00 73  |  00 00 00 00   |    0c 00 00 00    |       00 00       |     64 14     |  00 00 00 00  |
+      | Magic       | Message ID  | Message Length | Encryption Offset | Status Code | Message Class | Payload Offset |
+      | ----------- | ----------- | -------------- | ----------------- | ----------- | ------------- | -------------- |
+      | 0a bc de f0 | 00 00 00 73 | 00 00 00 00    | 0c 00 00 00       | 00 00       | 64 14         | 00 00 00 00    |
 
   - Camera
 
     - Header
 
-        |    Magic     |  Message ID  | Message Length | Encryption Offset |    Status Code    | Message Class | Payload Offset |
-        |--------------|--------------|----------------|-------------------|-------------------|---------------|---------------|
-        | 0a bc de f0  | 00 00 00 73  |  00 00 00 75   |    0c 00 00 00    |       c8 00       |     00 00     |  00 00 00 00  |
+      | Magic       | Message ID  | Message Length | Encryption Offset | Status Code | Message Class | Payload Offset |
+      | ----------- | ----------- | -------------- | ----------------- | ----------- | ------------- | -------------- |
+      | 0a bc de f0 | 00 00 00 73 | 00 00 00 75    | 0c 00 00 00       | c8 00       | 00 00         | 00 00 00 00    |
 
     - Payload
 
@@ -1794,32 +1975,32 @@ Message have zero to two payloads.
 
 - 116: `<Wifi>`
 
-    - Client:
-        Usual header
+  - Client:
+    Usual header
 
-    - Camera:
-        Payload:
-        ```xml
-        <?xml version="1.0" encoding="UTF-8" ?>
-        <body>
-        <Wifi version="1.1">
-        <mode>station</mode>
-        <authMode>wpa2psk</authMode>
-        <encryptType>aes</encryptType>
-        <udidList>
-            <udid>
-            <name>WIFINAME</name>
-            <signal>NUMBER</signal>
-            <encrypt>ONE_OR_ZERO</encrypt>
-            </udid>
-            # Repeats for ALL wifi in range
-        </udidList>
-        <ssid>YOUR_CURRENT_WIFI</ssid>
-        <key>YOUR_CURRENT_WIFI_PASSWORD_UNENCRYPTED</key>
-        <channel>YOUR_CURRENT_WIFI_CHANNEL</channel>
-        </Wifi>
-        </body>
-        ```
+  - Camera:
+    Payload:
+    ```xml
+    <?xml version="1.0" encoding="UTF-8" ?>
+    <body>
+    <Wifi version="1.1">
+    <mode>station</mode>
+    <authMode>wpa2psk</authMode>
+    <encryptType>aes</encryptType>
+    <udidList>
+        <udid>
+        <name>WIFINAME</name>
+        <signal>NUMBER</signal>
+        <encrypt>ONE_OR_ZERO</encrypt>
+        </udid>
+        # Repeats for ALL wifi in range
+    </udidList>
+    <ssid>YOUR_CURRENT_WIFI</ssid>
+    <key>YOUR_CURRENT_WIFI_PASSWORD_UNENCRYPTED</key>
+    <channel>YOUR_CURRENT_WIFI_CHANNEL</channel>
+    </Wifi>
+    </body>
+    ```
 
 - 132: `<VideoInput>`
 
@@ -1827,9 +2008,9 @@ Message have zero to two payloads.
 
     - Header
 
-        |    Magic     |  Message ID  | Message Length | Encryption Offset |    Status Code    | Message Class | Payload Offset |
-        |--------------|--------------|----------------|-------------------|-------------------|---------------|---------------|
-        | 0a bc de f0  | 00 00 00 84  |  00 00 00 68   |    65 00 00 00    |       00 00       |     64 14     |  00 00 00 68  |
+      | Magic       | Message ID  | Message Length | Encryption Offset | Status Code | Message Class | Payload Offset |
+      | ----------- | ----------- | -------------- | ----------------- | ----------- | ------------- | -------------- |
+      | 0a bc de f0 | 00 00 00 84 | 00 00 00 68    | 65 00 00 00       | 00 00       | 64 14         | 00 00 00 68    |
 
     - Extension
 
@@ -1844,9 +2025,9 @@ Message have zero to two payloads.
 
     - Header
 
-        |    Magic     |  Message ID  | Message Length | Encryption Offset |    Status Code    | Message Class | Payload Offset |
-        |--------------|--------------|----------------|-------------------|-------------------|---------------|---------------|
-        | 0a bc de f0  | 00 00 00 84  |  00 00 05 7c   |    65 00 00 00    |       c8 00       |     00 00     |  00 00 00 00  |
+      | Magic       | Message ID  | Message Length | Encryption Offset | Status Code | Message Class | Payload Offset |
+      | ----------- | ----------- | -------------- | ----------------- | ----------- | ------------- | -------------- |
+      | 0a bc de f0 | 00 00 00 84 | 00 00 05 7c    | 65 00 00 00       | c8 00       | 00 00         | 00 00 00 00    |
 
     - Payload
 
@@ -1935,34 +2116,35 @@ Message have zero to two payloads.
 
 - 124: `<PushInfo>`
 
-    - Client
-        - Payload:
+  - Client
 
-        ```xml
-        <?xml version="1.0" encoding="UTF-8" ?>
-        <body>
-        <PushInfo version="1.1">
-        <token>A_PUSH_NOTIFICATION_TOKEN</token>
-        <phoneType>reo_iphone</phoneType>
-        <clientID>A_PUSH_NOTIFICATION_CLIENTID</clientID>
-        </PushInfo>
-        </body>
-        ```
+    - Payload:
 
-    - Camera
-        - Payload
+    ```xml
+    <?xml version="1.0" encoding="UTF-8" ?>
+    <body>
+    <PushInfo version="1.1">
+    <token>A_PUSH_NOTIFICATION_TOKEN</token>
+    <phoneType>reo_iphone</phoneType>
+    <clientID>A_PUSH_NOTIFICATION_CLIENTID</clientID>
+    </PushInfo>
+    </body>
+    ```
 
-        ```xml
-        <?xml version="1.0" encoding="UTF-8" ?>
-        <body>
-        <PushRspInfo version="1.1">
-        <registerHandle>-1</registerHandle>
-        <uid>CAMERA_UID</uid>
-        <uidKey>A_4_CHAR_STRING</uidKey>
-        </PushRspInfo>
-        </body>
-        ```
+  - Camera
 
+    - Payload
+
+    ```xml
+    <?xml version="1.0" encoding="UTF-8" ?>
+    <body>
+    <PushRspInfo version="1.1">
+    <registerHandle>-1</registerHandle>
+    <uid>CAMERA_UID</uid>
+    <uidKey>A_4_CHAR_STRING</uidKey>
+    </PushRspInfo>
+    </body>
+    ```
 
 - 133: `<RfAlarm>`
 
@@ -1970,17 +2152,17 @@ Message have zero to two payloads.
 
     - Header
 
-        |    Magic     |  Message ID  | Message Length | Encryption Offset |    Status Code    | Message Class | Payload Offset |
-        |--------------|--------------|----------------|-------------------|-------------------|---------------|---------------|
-        | 0a bc de f0  | 00 00 00 85  |  00 00 00 00   |    06 00 00 00    |       00 00       |     64 14     |  00 00 00 00  |
+      | Magic       | Message ID  | Message Length | Encryption Offset | Status Code | Message Class | Payload Offset |
+      | ----------- | ----------- | -------------- | ----------------- | ----------- | ------------- | -------------- |
+      | 0a bc de f0 | 00 00 00 85 | 00 00 00 00    | 06 00 00 00       | 00 00       | 64 14         | 00 00 00 00    |
 
   - Camera
 
     - Header
 
-        |    Magic     |  Message ID  | Message Length | Encryption Offset |    Status Code    | Message Class | Payload Offset |
-        |--------------|--------------|----------------|-------------------|-------------------|---------------|---------------|
-        | 0a bc de f0  | 00 00 00 85  |  00 00 00 7f   |    06 00 00 00    |       c8 00       |     00 00     |  00 00 00 00  |
+      | Magic       | Message ID  | Message Length | Encryption Offset | Status Code | Message Class | Payload Offset |
+      | ----------- | ----------- | -------------- | ----------------- | ----------- | ------------- | -------------- |
+      | 0a bc de f0 | 00 00 00 85 | 00 00 00 7f    | 06 00 00 00       | c8 00       | 00 00         | 00 00 00 00    |
 
     - Payload
 
@@ -1994,23 +2176,62 @@ Message have zero to two payloads.
     </body>
     ```
 
+- 141: `<Email> (test)`
+
+  - Client
+
+    Usual Header
+
+    - Main
+
+      Sends the same XML as that on `<Email> (write)` (MsgId 43)
+
+      ```xml
+      <?xml version="1.0" encoding="UTF-8" ?>
+      <body>
+      <Email version="1.1">
+      <smtpServer>192.168.1.15</smtpServer>
+      <userName>Test@Cammy01.neolink</userName>
+      <password>TestPass</password>
+      <address1>postman@nowhere</address1>
+      <address2></address2>
+      <address3></address3>
+      <smtpPort>22022</smtpPort>
+      <sendNickname>TestUser</sendNickname>
+      <attachment>1</attachment>
+      <attachmentType>picture</attachmentType>
+      <textType>withText</textType>
+      <ssl>0</ssl>
+      <interval>30</interval>
+      </Email>
+      </body>
+      <?xml version="1.0" encoding="UTF-8" ?>
+      ```
+  - Camera
+
+    - Head Only Reply
+
+    Seems to return 400 if send failed
+
+    Channel_id seems to be set to -106 on failure maybe an internal error code
+
 - 146: `<StreamInfoList>`
 
   - Client
 
     - Header
 
-        |    Magic     |  Message ID  | Message Length | Encryption Offset |    Status Code    | Message Class | Payload Offset |
-        |--------------|--------------|----------------|-------------------|-------------------|---------------|---------------|
-        | 0a bc de f0  | 00 00 00 92  |  00 00 00 00   |    04 00 00 00    |       00 00       |     64 14     |  00 00 00 00  |
+      | Magic       | Message ID  | Message Length | Encryption Offset | Status Code | Message Class | Payload Offset |
+      | ----------- | ----------- | -------------- | ----------------- | ----------- | ------------- | -------------- |
+      | 0a bc de f0 | 00 00 00 92 | 00 00 00 00    | 04 00 00 00       | 00 00       | 64 14         | 00 00 00 00    |
 
   - Camera
 
     - Header
 
-        |    Magic     |  Message ID  | Message Length | Encryption Offset |    Status Code    | Message Class | Payload Offset |
-        |--------------|--------------|----------------|-------------------|-------------------|---------------|---------------|
-        | 0a bc de f0  | 00 00 00 92  |  00 00 02 fc   |    04 00 00 00    |       c8 00       |     00 00     |  00 00 00 00  |
+      | Magic       | Message ID  | Message Length | Encryption Offset | Status Code | Message Class | Payload Offset |
+      | ----------- | ----------- | -------------- | ----------------- | ----------- | ------------- | -------------- |
+      | 0a bc de f0 | 00 00 00 92 | 00 00 02 fc    | 04 00 00 00       | c8 00       | 00 00         | 00 00 00 00    |
 
     - Payload
 
@@ -2053,9 +2274,9 @@ Message have zero to two payloads.
 
     - Header
 
-        |    Magic     |  Message ID  | Message Length | Encryption Offset |    Status Code    | Message Class | Payload Offset |
-        |--------------|--------------|----------------|-------------------|-------------------|---------------|---------------|
-        | 0a bc de f0  | 00 00 00 97  |  00 00 00 a7   |    02 00 00 00    |       00 00       |     64 14     |  00 00 00 a7  |
+      | Magic       | Message ID  | Message Length | Encryption Offset | Status Code | Message Class | Payload Offset |
+      | ----------- | ----------- | -------------- | ----------------- | ----------- | ------------- | -------------- |
+      | 0a bc de f0 | 00 00 00 97 | 00 00 00 a7    | 02 00 00 00       | 00 00       | 64 14         | 00 00 00 a7    |
 
     - Extension
 
@@ -2071,9 +2292,9 @@ Message have zero to two payloads.
 
     - Header
 
-        |    Magic     |  Message ID  | Message Length | Encryption Offset |    Status Code    | Message Class | Payload Offset |
-        |--------------|--------------|----------------|-------------------|-------------------|---------------|---------------|
-        | 0a bc de f0  | 00 00 00 97  |  00 00 03 ac   |    02 00 00 00    |       c8 00       |     00 00     |  00 00 00 00  |
+      | Magic       | Message ID  | Message Length | Encryption Offset | Status Code | Message Class | Payload Offset |
+      | ----------- | ----------- | -------------- | ----------------- | ----------- | ------------- | -------------- |
+      | 0a bc de f0 | 00 00 00 97 | 00 00 03 ac    | 02 00 00 00       | c8 00       | 00 00         | 00 00 00 00    |
 
     - Payload
 
@@ -2120,9 +2341,9 @@ Message have zero to two payloads.
 
     - Header
 
-        |    Magic     |  Message ID  | Message Length | Encryption Offset |    Status Code    | Message Class | Payload Offset |
-        |--------------|--------------|----------------|-------------------|-------------------|---------------|---------------|
-        | 0a bc de f0  | 00 00 00 be  |  00 00 00 68   |    0d 00 00 00    |       00 00       |     64 14     |  00 00 00 68  |
+      | Magic       | Message ID  | Message Length | Encryption Offset | Status Code | Message Class | Payload Offset |
+      | ----------- | ----------- | -------------- | ----------------- | ----------- | ------------- | -------------- |
+      | 0a bc de f0 | 00 00 00 be | 00 00 00 68    | 0d 00 00 00       | 00 00       | 64 14         | 00 00 00 68    |
 
     - Extension
 
@@ -2137,9 +2358,9 @@ Message have zero to two payloads.
 
     - Header
 
-        |    Magic     |  Message ID  | Message Length | Encryption Offset |    Status Code    | Message Class | Payload Offset |
-        |--------------|--------------|----------------|-------------------|-------------------|---------------|---------------|
-        | 0a bc de f0  | 00 00 00 be  |  00 00 00 86   |    0d 00 00 00    |       c8 00       |     00 00     |  00 00 00 00  |
+      | Magic       | Message ID  | Message Length | Encryption Offset | Status Code | Message Class | Payload Offset |
+      | ----------- | ----------- | -------------- | ----------------- | ----------- | ------------- | -------------- |
+      | 0a bc de f0 | 00 00 00 be | 00 00 00 86    | 0d 00 00 00       | c8 00       | 00 00         | 00 00 00 00    |
 
     - Payload
 
@@ -2164,17 +2385,17 @@ Message have zero to two payloads.
 
     - Header
 
-        |    Magic     |  Message ID  | Message Length | Encryption Offset |    Status Code    | Message Class | Payload Offset |
-        |--------------|--------------|----------------|-------------------|-------------------|---------------|---------------|
-        | 0a bc de f0  | 00 00 00 c0  |  00 00 00 00   |    05 00 00 00    |       00 00       |     64 14     |  00 00 00 00  |
+      | Magic       | Message ID  | Message Length | Encryption Offset | Status Code | Message Class | Payload Offset |
+      | ----------- | ----------- | -------------- | ----------------- | ----------- | ------------- | -------------- |
+      | 0a bc de f0 | 00 00 00 c0 | 00 00 00 00    | 05 00 00 00       | 00 00       | 64 14         | 00 00 00 00    |
 
   - Camera
 
     - Header
 
-        |    Magic     |  Message ID  | Message Length | Encryption Offset |    Status Code    | Message Class | Payload Offset |
-        |--------------|--------------|----------------|-------------------|-------------------|---------------|---------------|
-        | 0a bc de f0  | 00 00 00 c0  |  00 00 00 00   |    05 00 00 00    |       c8 00       |     00 00     |  00 00 00 00  |
+      | Magic       | Message ID  | Message Length | Encryption Offset | Status Code | Message Class | Payload Offset |
+      | ----------- | ----------- | -------------- | ----------------- | ----------- | ------------- | -------------- |
+      | 0a bc de f0 | 00 00 00 c0 | 00 00 00 00    | 05 00 00 00       | c8 00       | 00 00         | 00 00 00 00    |
 
 - 199: `<Support>`
 
@@ -2182,17 +2403,17 @@ Message have zero to two payloads.
 
     - Header
 
-        |    Magic     |  Message ID  | Message Length | Encryption Offset |    Status Code    | Message Class | Payload Offset |
-        |--------------|--------------|----------------|-------------------|-------------------|---------------|---------------|
-        | 0a bc de f0  | 00 00 00 c7  |  00 00 00 00   |    02 00 00 00    |       00 00       |     64 14     |  00 00 00 00  |
+      | Magic       | Message ID  | Message Length | Encryption Offset | Status Code | Message Class | Payload Offset |
+      | ----------- | ----------- | -------------- | ----------------- | ----------- | ------------- | -------------- |
+      | 0a bc de f0 | 00 00 00 c7 | 00 00 00 00    | 02 00 00 00       | 00 00       | 64 14         | 00 00 00 00    |
 
   - Camera
 
     - Header
 
-        |    Magic     |  Message ID  | Message Length | Encryption Offset |    Status Code    | Message Class | Payload Offset |
-        |--------------|--------------|----------------|-------------------|-------------------|---------------|---------------|
-        | 0a bc de f0  | 00 00 00 c7  |  00 00 05 f6   |    02 00 00 00    |       c8 00       |     00 00     |  00 00 00 00  |
+      | Magic       | Message ID  | Message Length | Encryption Offset | Status Code | Message Class | Payload Offset |
+      | ----------- | ----------- | -------------- | ----------------- | ----------- | ------------- | -------------- |
+      | 0a bc de f0 | 00 00 00 c7 | 00 00 05 f6    | 02 00 00 00       | c8 00       | 00 00         | 00 00 00 00    |
 
     - Payload
 
@@ -2274,136 +2495,136 @@ Message have zero to two payloads.
 
     ```xml
     <Support version=\"1.1\">
-	<IOInputPortNum>0</IOInputPortNum>
-	<IOOutputPortNum>0</IOOutputPortNum>
-	<diskNum>0</diskNum>
-	<channelNum>2</channelNum>
-	<audioNum>1</audioNum>
-	<ptzMode>pt</ptzMode>
-	<ptzCfg>0</ptzCfg>
-	<B485>0</B485>
-	<autoUpdate>1</autoUpdate>
-	<pushAlarm>3</pushAlarm>
-	<ftp>0</ftp>
-	<ftpTest>1</ftpTest>
-	<email>1</email>
-	<wifi>0</wifi>
-	<record>0</record>
-	<wifiTest>1</wifiTest>
-	<rtsp>0</rtsp>
-	<onvif>0</onvif>
-	<audioTalk>1</audioTalk>
-	<rfVersion>4</rfVersion>
-	<rtmp>0</rtmp>
-	<noExternStream>1</noExternStream>
-	<timeFormat>1</timeFormat>
-	<ddnsVersion>1</ddnsVersion>
-	<emailVersion>3</emailVersion>
-	<pushVersion>1</pushVersion>
-	<pushType>1</pushType>
-	<audioAlarm>1</audioAlarm>
-	<apMode>0</apMode>
-	<cloudVersion>127</cloudVersion>
-	<replayVersion>20</replayVersion>
-	<mobComVersion>3</mobComVersion>
-	<ExportImport>3</ExportImport>
-	<languageVer>0</languageVer>
-	<videoStandard>0</videoStandard>
-	<syncTime>0</syncTime>
-	<netPort>1</netPort>
-	<nasVersion>7</nasVersion>
-	<needReboot>0</needReboot>
-	<reboot>1</reboot>
-	<audioCfg>1</audioCfg>
-	<networkDiagnosis>0</networkDiagnosis>
-	<heightDiffAdjust>2</heightDiffAdjust>
-	<upgrade>1</upgrade>
-	<gps>0</gps>
-	<powerSavingCfg>0</powerSavingCfg>
-	<loginLocked>0</loginLocked>
-	<viewPlan>0</viewPlan>
-	<previewReplayLimit>0</previewReplayLimit>
-	<IOTLink>0</IOTLink>
-	<IOTLinkActionMax>48</IOTLinkActionMax>
-	<recordCfg>53</recordCfg>
-	<largeBattery>0</largeBattery>
-	<smartHome>
-		<version>1</version>
-		<item>
-			<name>googleHome</name>
-			<ver>1</ver>
-		</item>
-		<item>
-			<name>amazonAlexa</name>
-			<ver>1</ver>
-		</item>
-	</smartHome>
-	<item>
-		<chnID>0</chnID>
-		<ptzType>3</ptzType>
-		<rfCfg>0</rfCfg>
-		<noAudio>0</noAudio>
-		<autoFocus>0</autoFocus>
-		<videoClip>0</videoClip>
-		<battery>2</battery>
-		<ispCfg>195</ispCfg>
-		<osdCfg>1</osdCfg>
-		<batAnalysis>1</batAnalysis>
-		<dynamicReso>1</dynamicReso>
-		<audioVersion>63</audioVersion>
-		<ledCtrl>10</ledCtrl>
-		<ptzControl>207</ptzControl>
-		<newIspCfg>22467</newIspCfg>
-		<ptzPreset>1</ptzPreset>
-		<ptzPatrol>0</ptzPatrol>
-		<ptzTattern>0</ptzTattern>
-		<autoPt>0</autoPt>
-		<h264Profile>7</h264Profile>
-		<motion>0</motion>
-		<aitype>32503</aitype>
-		<aiAnimalType>1</aiAnimalType>
-		<timelapse>3</timelapse>
-		<snap>20</snap>
-		<encCtrl>0</encCtrl>
-		<zfBacklash>0</zfBacklash>
-		<IOTLinkAbility>747</IOTLinkAbility>
-		<ipcAudioTalk>1</ipcAudioTalk>
-		<binoCfg>0</binoCfg>
-		<thumbnail>2</thumbnail>
-	</item>
-	<item>
-		<chnID>1</chnID>
-		<ptzType>3</ptzType>
-		<rfCfg>0</rfCfg>
-		<noAudio>0</noAudio>
-		<autoFocus>0</autoFocus>
-		<videoClip>0</videoClip>
-		<battery>2</battery>
-		<ispCfg>195</ispCfg>
-		<osdCfg>1</osdCfg>
-		<batAnalysis>1</batAnalysis>
-		<dynamicReso>0</dynamicReso>
-		<audioVersion>63</audioVersion>
-		<ledCtrl>10</ledCtrl>
-		<ptzControl>223</ptzControl>
-		<newIspCfg>22467</newIspCfg>
-		<ptzPreset>1</ptzPreset>
-		<ptzPatrol>0</ptzPatrol>
-		<ptzTattern>0</ptzTattern>
-		<autoPt>0</autoPt>
-		<h264Profile>7</h264Profile>
-		<motion>0</motion>
-		<aitype>32503</aitype>
-		<aiAnimalType>1</aiAnimalType>
-		<timelapse>3</timelapse>
-		<snap>28</snap>
-		<encCtrl>0</encCtrl>
-		<zfBacklash>0</zfBacklash>
-		<IOTLinkAbility>747</IOTLinkAbility>
-		<ipcAudioTalk>1</ipcAudioTalk>
-		<binoCfg>0</binoCfg>
-		<thumbnail>2</thumbnail>
-	</item>
+    <IOInputPortNum>0</IOInputPortNum>
+    <IOOutputPortNum>0</IOOutputPortNum>
+    <diskNum>0</diskNum>
+    <channelNum>2</channelNum>
+    <audioNum>1</audioNum>
+    <ptzMode>pt</ptzMode>
+    <ptzCfg>0</ptzCfg>
+    <B485>0</B485>
+    <autoUpdate>1</autoUpdate>
+    <pushAlarm>3</pushAlarm>
+    <ftp>0</ftp>
+    <ftpTest>1</ftpTest>
+    <email>1</email>
+    <wifi>0</wifi>
+    <record>0</record>
+    <wifiTest>1</wifiTest>
+    <rtsp>0</rtsp>
+    <onvif>0</onvif>
+    <audioTalk>1</audioTalk>
+    <rfVersion>4</rfVersion>
+    <rtmp>0</rtmp>
+    <noExternStream>1</noExternStream>
+    <timeFormat>1</timeFormat>
+    <ddnsVersion>1</ddnsVersion>
+    <emailVersion>3</emailVersion>
+    <pushVersion>1</pushVersion>
+    <pushType>1</pushType>
+    <audioAlarm>1</audioAlarm>
+    <apMode>0</apMode>
+    <cloudVersion>127</cloudVersion>
+    <replayVersion>20</replayVersion>
+    <mobComVersion>3</mobComVersion>
+    <ExportImport>3</ExportImport>
+    <languageVer>0</languageVer>
+    <videoStandard>0</videoStandard>
+    <syncTime>0</syncTime>
+    <netPort>1</netPort>
+    <nasVersion>7</nasVersion>
+    <needReboot>0</needReboot>
+    <reboot>1</reboot>
+    <audioCfg>1</audioCfg>
+    <networkDiagnosis>0</networkDiagnosis>
+    <heightDiffAdjust>2</heightDiffAdjust>
+    <upgrade>1</upgrade>
+    <gps>0</gps>
+    <powerSavingCfg>0</powerSavingCfg>
+    <loginLocked>0</loginLocked>
+    <viewPlan>0</viewPlan>
+    <previewReplayLimit>0</previewReplayLimit>
+    <IOTLink>0</IOTLink>
+    <IOTLinkActionMax>48</IOTLinkActionMax>
+    <recordCfg>53</recordCfg>
+    <largeBattery>0</largeBattery>
+    <smartHome>
+    	<version>1</version>
+    	<item>
+    		<name>googleHome</name>
+    		<ver>1</ver>
+    	</item>
+    	<item>
+    		<name>amazonAlexa</name>
+    		<ver>1</ver>
+    	</item>
+    </smartHome>
+    <item>
+    	<chnID>0</chnID>
+    	<ptzType>3</ptzType>
+    	<rfCfg>0</rfCfg>
+    	<noAudio>0</noAudio>
+    	<autoFocus>0</autoFocus>
+    	<videoClip>0</videoClip>
+    	<battery>2</battery>
+    	<ispCfg>195</ispCfg>
+    	<osdCfg>1</osdCfg>
+    	<batAnalysis>1</batAnalysis>
+    	<dynamicReso>1</dynamicReso>
+    	<audioVersion>63</audioVersion>
+    	<ledCtrl>10</ledCtrl>
+    	<ptzControl>207</ptzControl>
+    	<newIspCfg>22467</newIspCfg>
+    	<ptzPreset>1</ptzPreset>
+    	<ptzPatrol>0</ptzPatrol>
+    	<ptzTattern>0</ptzTattern>
+    	<autoPt>0</autoPt>
+    	<h264Profile>7</h264Profile>
+    	<motion>0</motion>
+    	<aitype>32503</aitype>
+    	<aiAnimalType>1</aiAnimalType>
+    	<timelapse>3</timelapse>
+    	<snap>20</snap>
+    	<encCtrl>0</encCtrl>
+    	<zfBacklash>0</zfBacklash>
+    	<IOTLinkAbility>747</IOTLinkAbility>
+    	<ipcAudioTalk>1</ipcAudioTalk>
+    	<binoCfg>0</binoCfg>
+    	<thumbnail>2</thumbnail>
+    </item>
+    <item>
+    	<chnID>1</chnID>
+    	<ptzType>3</ptzType>
+    	<rfCfg>0</rfCfg>
+    	<noAudio>0</noAudio>
+    	<autoFocus>0</autoFocus>
+    	<videoClip>0</videoClip>
+    	<battery>2</battery>
+    	<ispCfg>195</ispCfg>
+    	<osdCfg>1</osdCfg>
+    	<batAnalysis>1</batAnalysis>
+    	<dynamicReso>0</dynamicReso>
+    	<audioVersion>63</audioVersion>
+    	<ledCtrl>10</ledCtrl>
+    	<ptzControl>223</ptzControl>
+    	<newIspCfg>22467</newIspCfg>
+    	<ptzPreset>1</ptzPreset>
+    	<ptzPatrol>0</ptzPatrol>
+    	<ptzTattern>0</ptzTattern>
+    	<autoPt>0</autoPt>
+    	<h264Profile>7</h264Profile>
+    	<motion>0</motion>
+    	<aitype>32503</aitype>
+    	<aiAnimalType>1</aiAnimalType>
+    	<timelapse>3</timelapse>
+    	<snap>28</snap>
+    	<encCtrl>0</encCtrl>
+    	<zfBacklash>0</zfBacklash>
+    	<IOTLinkAbility>747</IOTLinkAbility>
+    	<ipcAudioTalk>1</ipcAudioTalk>
+    	<binoCfg>0</binoCfg>
+    	<thumbnail>2</thumbnail>
+    </item>
     </Support>
     ```
 
@@ -2413,11 +2634,12 @@ Message have zero to two payloads.
 
     - Header
 
-        |    Magic     |  Message ID  | Message Length | Encryption Offset |    Status Code    | Message Class | Binary Offset |
-        |--------------|--------------|----------------|-------------------|-------------------|---------------|---------------|
-        | 0a bc de f0  | 00 00 00 c9  |  00 00 01 f2   |    12 00 00 00    |       00 00       |     64 14     |  00 00 00 68  |
+      | Magic       | Message ID  | Message Length | Encryption Offset | Status Code | Message Class | Binary Offset |
+      | ----------- | ----------- | -------------- | ----------------- | ----------- | ------------- | ------------- |
+      | 0a bc de f0 | 00 00 00 c9 | 00 00 01 f2    | 12 00 00 00       | 00 00       | 64 14         | 00 00 00 68   |
 
     - Body
+
     ```xml
     <?xml version="1.0" encoding="UTF-8" ?>
     <Extension version="1.1">
@@ -2449,9 +2671,9 @@ Message have zero to two payloads.
 
     - Header
 
-        |    Magic     |  Message ID  | Message Length | Encryption Offset |    Status Code    | Message Class | Binary Offset |
-        |--------------|--------------|----------------|-------------------|-------------------|---------------|---------------|
-        | 0a bc de f0  | 00 00 00 c9  |  00 00 00 00   |    12 00 00 00    |       c8 00       |     00 00     |  00 00 00 00  |
+      | Magic       | Message ID  | Message Length | Encryption Offset | Status Code | Message Class | Binary Offset |
+      | ----------- | ----------- | -------------- | ----------------- | ----------- | ------------- | ------------- |
+      | 0a bc de f0 | 00 00 00 c9 | 00 00 00 00    | 12 00 00 00       | c8 00       | 00 00         | 00 00 00 00   |
 
 - 202: `Talk`
 
@@ -2459,11 +2681,12 @@ Message have zero to two payloads.
 
     - Header
 
-        |    Magic     |  Message ID  | Message Length | Encryption Offset |    Status Code    | Message Class | Binary Offset |
-        |--------------|--------------|----------------|-------------------|-------------------|---------------|---------------|
-        | 0a bc de f0  | 00 00 00 ca  |  00 00 08 c3   |    00 00 00 00    |       00 00       |     64 14     |  00 00 00 83  |
+      | Magic       | Message ID  | Message Length | Encryption Offset | Status Code | Message Class | Binary Offset |
+      | ----------- | ----------- | -------------- | ----------------- | ----------- | ------------- | ------------- |
+      | 0a bc de f0 | 00 00 00 ca | 00 00 08 c3    | 00 00 00 00       | 00 00       | 64 14         | 00 00 00 83   |
 
     - Body
+
     ```xml
     <?xml version="1.0" encoding="UTF-8" ?>
     <Extension version="1.1">
@@ -2476,9 +2699,7 @@ Message have zero to two payloads.
 
       Binary data contains media-packets of adpcm data
 
-
   **Notes**: No reply from camera. After this the client keeps sending this packet with binary in the BcMedia encoded packets of adpcm data
-
 
 - 204: `<rfAlarmCfg>` (write)
 
@@ -2566,9 +2787,9 @@ Message have zero to two payloads.
 
     - Header
 
-        |    Magic     |  Message ID  | Message Length | Encryption Offset |    Status Code    | Message Class | Payload Offset |
-        |--------------|--------------|----------------|-------------------|-------------------|---------------|---------------|
-        | 0a bc de f0  | 00 00 00 d0  |  00 00 00 68   |    2e 00 00 00    |       00 00       |     64 14     |  00 00 00 68  |
+      | Magic       | Message ID  | Message Length | Encryption Offset | Status Code | Message Class | Payload Offset |
+      | ----------- | ----------- | -------------- | ----------------- | ----------- | ------------- | -------------- |
+      | 0a bc de f0 | 00 00 00 d0 | 00 00 00 68    | 2e 00 00 00       | 00 00       | 64 14         | 00 00 00 68    |
 
     - Extension
 
@@ -2583,9 +2804,9 @@ Message have zero to two payloads.
 
     - Header
 
-        |    Magic     |  Message ID  | Message Length | Encryption Offset |    Status Code    | Message Class | Payload Offset |
-        |--------------|--------------|----------------|-------------------|-------------------|---------------|---------------|
-        | 0a bc de f0  | 00 00 00 d0  |  00 00 00 c2   |    2e 00 00 00    |       c8 00       |     00 00     |  00 00 00 00  |
+      | Magic       | Message ID  | Message Length | Encryption Offset | Status Code | Message Class | Payload Offset |
+      | ----------- | ----------- | -------------- | ----------------- | ----------- | ------------- | -------------- |
+      | 0a bc de f0 | 00 00 00 d0 | 00 00 00 c2    | 2e 00 00 00       | c8 00       | 00 00         | 00 00 00 00    |
 
     - Payload
 
@@ -2607,9 +2828,9 @@ Message have zero to two payloads.
 
     - Header
 
-        |    Magic     |  Message ID  | Message Length | Encryption Offset |    Status Code    | Message Class | Payload Offset |
-        |--------------|--------------|----------------|-------------------|-------------------|---------------|---------------|
-        | 0a bc de f0  | 00 00 00 d1  |  00 00 01 10   |    85 00 00 00    |       00 00       |     64 14     |  00 00 00 68  |
+      | Magic       | Message ID  | Message Length | Encryption Offset | Status Code | Message Class | Payload Offset |
+      | ----------- | ----------- | -------------- | ----------------- | ----------- | ------------- | -------------- |
+      | 0a bc de f0 | 00 00 00 d1 | 00 00 01 10    | 85 00 00 00       | 00 00       | 64 14         | 00 00 00 68    |
 
     - Extension
 
@@ -2637,158 +2858,341 @@ Message have zero to two payloads.
 
     - Header
 
-        |    Magic     |  Message ID  | Message Length | Encryption Offset |    Status Code    | Message Class | Payload Offset |
-        |--------------|--------------|----------------|-------------------|-------------------|---------------|---------------|
-        | 0a bc de f0  | 00 00 00 d1  |  00 00 00 00   |    85 00 00 00    |       c8 00       |     00 00     |  00 00 00 00  |
+      | Magic       | Message ID  | Message Length | Encryption Offset | Status Code | Message Class | Payload Offset |
+      | ----------- | ----------- | -------------- | ----------------- | ----------- | ------------- | -------------- |
+      | 0a bc de f0 | 00 00 00 d1 | 00 00 00 00    | 85 00 00 00       | c8 00       | 00 00         | 00 00 00 00    |
+
+- 216: `<EmailTask> (write)`
+
+  - Client
+    Usual header
+
+    - Meta:
+
+      ```xml
+      <?xml version="1.0" encoding="UTF-8" ?>
+      <Extension version="1.1">
+      <channelId>0</channelId>
+      </Extension>
+      ```
+
+    - Main (Turn ON)
+
+      ```xml
+      <?xml version="1.0" encoding="UTF-8" ?>
+      <body>
+      <EmailTask version="1.1">
+      <channelId>0</channelId>
+      <enable>1</enable>
+      </EmailTask>
+      </body>
+      ```
+
+    - Main (Turn OFF)
+
+      ```xml
+      <?xml version="1.0" encoding="UTF-8" ?>
+      <body>
+      <EmailTask version="1.1">
+      <channelId>0</channelId>
+      <enable>0</enable>
+      </EmailTask>
+      </body>
+      ```
+
+    - Main (Change)
+      ```xml
+      <?xml version="1.0" encoding="UTF-8" ?>
+      <body>
+      <EmailTask version="1.1">
+      <channelId>0</channelId>
+      <enable>1</enable>
+      <ScheduleList>
+      <Schedule>
+      <alarmType>MD</alarmType>
+      <timeBlockList>
+      <timeBlock>
+      <enable>1</enable>
+      <weekDay>Sunday</weekDay>
+      <beginHour>0</beginHour>
+      <endHour>23</endHour>
+      </timeBlock>
+      <timeBlock>
+      <enable>1</enable>
+      <weekDay>Monday</weekDay>
+      <beginHour>0</beginHour>
+      <endHour>23</endHour>
+      </timeBlock>
+      <timeBlock>
+      <enable>1</enable>
+      <weekDay>Tuesday</weekDay>
+      <beginHour>0</beginHour>
+      <endHour>23</endHour>
+      </timeBlock>
+      <timeBlock>
+      <enable>1</enable>
+      <weekDay>Wednesday</weekDay>
+      <beginHour>0</beginHour>
+      <endHour>23</endHour>
+      </timeBlock>
+      <timeBlock>
+      <enable>1</enable>
+      <weekDay>Thursday</weekDay>
+      <beginHour>0</beginHour>
+      <endHour>23</endHour>
+      </timeBlock>
+      <timeBlock>
+      <enable>1</enable>
+      <weekDay>Friday</weekDay>
+      <beginHour>0</beginHour>
+      <endHour>23</endHour>
+      </timeBlock>
+      <timeBlock>
+      <enable>1</enable>
+      <weekDay>Saturday</weekDay>
+      <beginHour>0</beginHour>
+      <endHour>23</endHour>
+      </timeBlock>
+      </timeBlockList>
+      </Schedule>
+      </ScheduleList>
+      </EmailTask>
+      </body>
+      ```
+
+  - Camera
+    Usual header
+
+- 217: `<EmailTask>`
+
+  - Client
+    Usual header
+
+    - Meta:
+      ```xml
+      <?xml version="1.0" encoding="UTF-8" ?>
+      <Extension version="1.1">
+      <channelId>0</channelId>
+      </Extension>
+      ```
+
+  - Camera
+    Usual header
+    - Main:
+      ```xml
+      <?xml version="1.0" encoding="UTF-8" ?>
+      <body>
+      <EmailTask version="1.1">
+      <channelId>0</channelId>
+      <enable>0</enable>
+      <ScheduleList>
+      <Schedule>
+      <alarmType>MD</alarmType>
+      <timeBlockList>
+      <timeBlock>
+      <enable>1</enable>
+      <weekDay>Sunday</weekDay>
+      <beginHour>0</beginHour>
+      <endHour>23</endHour>
+      </timeBlock>
+      <timeBlock>
+      <enable>1</enable>
+      <weekDay>Monday</weekDay>
+      <beginHour>0</beginHour>
+      <endHour>23</endHour>
+      </timeBlock>
+      <timeBlock>
+      <enable>1</enable>
+      <weekDay>Tuesday</weekDay>
+      <beginHour>0</beginHour>
+      <endHour>23</endHour>
+      </timeBlock>
+      <timeBlock>
+      <enable>1</enable>
+      <weekDay>Wednesday</weekDay>
+      <beginHour>0</beginHour>
+      <endHour>23</endHour>
+      </timeBlock>
+      <timeBlock>
+      <enable>1</enable>
+      <weekDay>Thursday</weekDay>
+      <beginHour>0</beginHour>
+      <endHour>23</endHour>
+      </timeBlock>
+      <timeBlock>
+      <enable>1</enable>
+      <weekDay>Friday</weekDay>
+      <beginHour>0</beginHour>
+      <endHour>23</endHour>
+      </timeBlock>
+      <timeBlock>
+      <enable>1</enable>
+      <weekDay>Saturday</weekDay>
+      <beginHour>0</beginHour>
+      <endHour>23</endHour>
+      </timeBlock>
+      </timeBlockList>
+      </Schedule>
+      </ScheduleList>
+      </EmailTask>
+      </body>
+      ```
 
 - 219: `<PushTask>`
-    - Client
-        Usual header
 
-        - Meta:
-        ```xml
-        <?xml version="1.0" encoding="UTF-8" ?>
-        <Extension version="1.1">
-        <channelId>0</channelId>
-        </Extension>
-        ```
-    - Camera
-        Usual header
+  - Client
+    Usual header
 
-        - Payload:
-        ```xml
-        <?xml version="1.0" encoding="UTF-8" ?>
-        <body>
-        <PushTask version="1.1">
-        <channelId>0</channelId>
-        <enable>1</enable>
-        <ScheduleList>
-        <Schedule>
-        <alarmType>MD</alarmType>
-        <timeBlockList>
-        <timeBlock>
-        <enable>1</enable>
-        <weekDay>Sunday</weekDay>
-        <beginHour>0</beginHour>
-        <endHour>23</endHour>
-        </timeBlock>
-        <timeBlock>
-        <enable>1</enable>
-        <weekDay>Monday</weekDay>
-        <beginHour>0</beginHour>
-        <endHour>23</endHour>
-        </timeBlock>
-        <timeBlock>
-        <enable>1</enable>
-        <weekDay>Tuesday</weekDay>
-        <beginHour>0</beginHour>
-        <endHour>23</endHour>
-        </timeBlock>
-        <timeBlock>
-        <enable>1</enable>
-        <weekDay>Wednesday</weekDay>
-        <beginHour>0</beginHour>
-        <endHour>23</endHour>
-        </timeBlock>
-        <timeBlock>
-        <enable>1</enable>
-        <weekDay>Thursday</weekDay>
-        <beginHour>0</beginHour>
-        <endHour>23</endHour>
-        </timeBlock>
-        <timeBlock>
-        <enable>1</enable>
-        <weekDay>Friday</weekDay>
-        <beginHour>0</beginHour>
-        <endHour>23</endHour>
-        </timeBlock>
-        <timeBlock>
-        <enable>1</enable>
-        <weekDay>Saturday</weekDay>
-        <beginHour>0</beginHour>
-        <endHour>23</endHour>
-        </timeBlock>
-        </timeBlockList>
-        </Schedule>
-        </ScheduleList>
-        </PushTask>
-        </body>
-        ```
+    - Meta:
 
+    ```xml
+    <?xml version="1.0" encoding="UTF-8" ?>
+    <Extension version="1.1">
+    <channelId>0</channelId>
+    </Extension>
+    ```
+
+  - Camera
+    Usual header
+
+    - Payload:
+
+    ```xml
+    <?xml version="1.0" encoding="UTF-8" ?>
+    <body>
+    <PushTask version="1.1">
+    <channelId>0</channelId>
+    <enable>1</enable>
+    <ScheduleList>
+    <Schedule>
+    <alarmType>MD</alarmType>
+    <timeBlockList>
+    <timeBlock>
+    <enable>1</enable>
+    <weekDay>Sunday</weekDay>
+    <beginHour>0</beginHour>
+    <endHour>23</endHour>
+    </timeBlock>
+    <timeBlock>
+    <enable>1</enable>
+    <weekDay>Monday</weekDay>
+    <beginHour>0</beginHour>
+    <endHour>23</endHour>
+    </timeBlock>
+    <timeBlock>
+    <enable>1</enable>
+    <weekDay>Tuesday</weekDay>
+    <beginHour>0</beginHour>
+    <endHour>23</endHour>
+    </timeBlock>
+    <timeBlock>
+    <enable>1</enable>
+    <weekDay>Wednesday</weekDay>
+    <beginHour>0</beginHour>
+    <endHour>23</endHour>
+    </timeBlock>
+    <timeBlock>
+    <enable>1</enable>
+    <weekDay>Thursday</weekDay>
+    <beginHour>0</beginHour>
+    <endHour>23</endHour>
+    </timeBlock>
+    <timeBlock>
+    <enable>1</enable>
+    <weekDay>Friday</weekDay>
+    <beginHour>0</beginHour>
+    <endHour>23</endHour>
+    </timeBlock>
+    <timeBlock>
+    <enable>1</enable>
+    <weekDay>Saturday</weekDay>
+    <beginHour>0</beginHour>
+    <endHour>23</endHour>
+    </timeBlock>
+    </timeBlockList>
+    </Schedule>
+    </ScheduleList>
+    </PushTask>
+    </body>
+    ```
 
 - 232: `<AudioTask>`
-    - Client
-        Usual header
 
-        - Meta:
-        ```xml
-        <?xml version="1.0" encoding="UTF-8" ?>
-        <Extension version="1.1">
-        <channelId>0</channelId>
-        </Extension>
-        ```
-    - Camera
-        Usual header
+  - Client
+    Usual header
 
-        - Payload:
-        ```xml
-        <?xml version="1.0" encoding="UTF-8" ?>
-        <body>
-        <AudioTask version="1.1">
-        <channelId>0</channelId>
-        <enable>0</enable>
-        <ScheduleList>
-        <Schedule>
-        <alarmType>MD</alarmType>
-        <timeBlockList>
-        <timeBlock>
-        <enable>1</enable>
-        <weekDay>Sunday</weekDay>
-        <beginHour>0</beginHour>
-        <endHour>23</endHour>
-        </timeBlock>
-        <timeBlock>
-        <enable>1</enable>
-        <weekDay>Monday</weekDay>
-        <beginHour>0</beginHour>
-        <endHour>23</endHour>
-        </timeBlock>
-        <timeBlock>
-        <enable>1</enable>
-        <weekDay>Tuesday</weekDay>
-        <beginHour>0</beginHour>
-        <endHour>23</endHour>
-        </timeBlock>
-        <timeBlock>
-        <enable>1</enable>
-        <weekDay>Wednesday</weekDay>
-        <beginHour>0</beginHour>
-        <endHour>23</endHour>
-        </timeBlock>
-        <timeBlock>
-        <enable>1</enable>
-        <weekDay>Thursday</weekDay>
-        <beginHour>0</beginHour>
-        <endHour>23</endHour>
-        </timeBlock>
-        <timeBlock>
-        <enable>1</enable>
-        <weekDay>Friday</weekDay>
-        <beginHour>0</beginHour>
-        <endHour>23</endHour>
-        </timeBlock>
-        <timeBlock>
-        <enable>1</enable>
-        <weekDay>Saturday</weekDay>
-        <beginHour>0</beginHour>
-        <endHour>23</endHour>
-        </timeBlock>
-        </timeBlockList>
-        </Schedule>
-        </ScheduleList>
-        </AudioTask>
-        </body>
-        ```
+    - Meta:
+
+    ```xml
+    <?xml version="1.0" encoding="UTF-8" ?>
+    <Extension version="1.1">
+    <channelId>0</channelId>
+    </Extension>
+    ```
+
+  - Camera
+    Usual header
+
+    - Payload:
+
+    ```xml
+    <?xml version="1.0" encoding="UTF-8" ?>
+    <body>
+    <AudioTask version="1.1">
+    <channelId>0</channelId>
+    <enable>0</enable>
+    <ScheduleList>
+    <Schedule>
+    <alarmType>MD</alarmType>
+    <timeBlockList>
+    <timeBlock>
+    <enable>1</enable>
+    <weekDay>Sunday</weekDay>
+    <beginHour>0</beginHour>
+    <endHour>23</endHour>
+    </timeBlock>
+    <timeBlock>
+    <enable>1</enable>
+    <weekDay>Monday</weekDay>
+    <beginHour>0</beginHour>
+    <endHour>23</endHour>
+    </timeBlock>
+    <timeBlock>
+    <enable>1</enable>
+    <weekDay>Tuesday</weekDay>
+    <beginHour>0</beginHour>
+    <endHour>23</endHour>
+    </timeBlock>
+    <timeBlock>
+    <enable>1</enable>
+    <weekDay>Wednesday</weekDay>
+    <beginHour>0</beginHour>
+    <endHour>23</endHour>
+    </timeBlock>
+    <timeBlock>
+    <enable>1</enable>
+    <weekDay>Thursday</weekDay>
+    <beginHour>0</beginHour>
+    <endHour>23</endHour>
+    </timeBlock>
+    <timeBlock>
+    <enable>1</enable>
+    <weekDay>Friday</weekDay>
+    <beginHour>0</beginHour>
+    <endHour>23</endHour>
+    </timeBlock>
+    <timeBlock>
+    <enable>1</enable>
+    <weekDay>Saturday</weekDay>
+    <beginHour>0</beginHour>
+    <endHour>23</endHour>
+    </timeBlock>
+    </timeBlockList>
+    </Schedule>
+    </ScheduleList>
+    </AudioTask>
+    </body>
+    ```
 
 - 264: `<audioPlayInfo>`
 
@@ -2850,53 +3254,57 @@ Message have zero to two payloads.
     ```
 
 - 268: `CloudBindInfo`
-    - Client:
-        Usual header only packet
 
-    - Camera
+  - Client:
+    Usual header only packet
 
-        - Payload
+  - Camera
 
-        ```xml
-        <?xml version="1.0" encoding="UTF-8" ?>
-        <body>
-        <CloudBindInfo version="1.1">
-        <binded>1</binded>
-        </CloudBindInfo>
-        </body>
-        ```
+    - Payload
+
+    ```xml
+    <?xml version="1.0" encoding="UTF-8" ?>
+    <body>
+    <CloudBindInfo version="1.1">
+    <binded>1</binded>
+    </CloudBindInfo>
+    </body>
+    ```
 
 - 282: `CloudLoginKey`
 
-    - Client:
-        Usual header only packet
+  - Client:
+    Usual header only packet
 
-    - Camera
-        - Payload
+  - Camera
 
-        ```xml
-        <body>
-        <CloudLoginKey version="1.1">
-        <enable>0</enable>
-        </CloudLoginKey>
-        </body>
-        ```
+    - Payload
+
+    ```xml
+    <body>
+    <CloudLoginKey version="1.1">
+    <enable>0</enable>
+    </CloudLoginKey>
+    </body>
+    ```
 
 - 287: `<TimeCfg>`
-    - Client:
-        - Payload
 
-        ```xml
-        <?xml version="1.0" encoding="UTF-8" ?>
-        <body>
-        <TimeCfg version="1.1">
-        <realTime>1684393362</realTime>
-        </TimeCfg>
-        </body>
-        ```
+  - Client:
 
-    - Camera
-        Header only 200 Ok reply
+    - Payload
+
+    ```xml
+    <?xml version="1.0" encoding="UTF-8" ?>
+    <body>
+    <TimeCfg version="1.1">
+    <realTime>1684393362</realTime>
+    </TimeCfg>
+    </body>
+    ```
+
+  - Camera
+    Header only 200 Ok reply
 
 - 288: `<FloodlightManual>` (write)
 
@@ -3132,9 +3540,9 @@ Message have zero to two payloads.
 
     - Header
 
-    |    Magic     |  Message ID  | Message Length | Encryption Offset |    Status Code    | Message Class | Payload Offset |
-    |--------------|--------------|----------------|-------------------|-------------------|---------------|----------------|
-    | f0 de bc 0a  | fc 00 00 00  |  1c 02 00 00   |    00 00 00 00    |       c8 00       |      00 00    |   00 00 00 00  |
+    | Magic       | Message ID  | Message Length | Encryption Offset | Status Code | Message Class | Payload Offset |
+    | ----------- | ----------- | -------------- | ----------------- | ----------- | ------------- | -------------- |
+    | f0 de bc 0a | fc 00 00 00 | 1c 02 00 00    | 00 00 00 00       | c8 00       | 00 00         | 00 00 00 00    |
 
     - Payload
 
@@ -3160,11 +3568,13 @@ Message have zero to two payloads.
     **Notes**: Sent after login, with a message handle of 0 (usually 0 means not sent in reply to a specific request). TODO: Find out how to request on demand.
 
 - 252 <BatteryList>
+
   - Client
-      None: This is a camera event
+    None: This is a camera event
   - Camera:
 
     Standard header
+
   - Payload
 
     ```xml
@@ -3189,16 +3599,16 @@ Message have zero to two payloads.
 - 255 <Net3g4gInfo>
 
   - Client
-        NONE: This is a camera event
+    NONE: This is a camera event
 
   - Camera:
-        Standard header
+    Standard header
 
   - Payload
 
     ```xml
     <?xml version="1.0" encoding="UTF-8" ?>
-
+    ```
 
 - 295: `<StartZoomFocus>` (Write)
 
@@ -3213,3 +3623,4 @@ Message have zero to two payloads.
     <body>
     <StartZoomFocus version="1.1">
     <channelId>1</ch
+    ```

@@ -222,13 +222,15 @@ local header_lengths = {
 -- For other locations, use: LUA_CPATH=.../luagcrypt/?.so
 bc_protocol.prefs.key = Pref.string("Decryption key", "",
     "Passphrase used for the camera. Required to decrypt the AES packets")
-_G.nonce = ""
+_G.nonce = {}
 local function hexencode(str)
      return (str:gsub(".", function(char) return string.format("%02X", char:byte()) end))
 end
 local gcrypt = require("luagcrypt")
-local function aes_decrypt(data)
-		local raw_key = (_G.nonce or "") .. "-" ..  bc_protocol.prefs.key
+local function aes_decrypt(data, pinfo)
+    local nonce_key = tostring(pinfo.src) .. ":" .. pinfo.src_port
+    local nonce = (_G.nonce[nonce_key] or "")
+		local raw_key = nonce .. "-" ..  bc_protocol.prefs.key
     local iv = "0123456789abcdef"
     local hasher = gcrypt.Hash(gcrypt.MD_MD5)
     hasher:write(raw_key)
@@ -358,9 +360,9 @@ local function process_body(header, body_buffer, bc_subtree, pinfo)
       local body_tvb = xml_buffer:tvb("Meta Payload")
       body:add(body_tvb(), "Meta Payload")
       if xml_len >= 4 then
-        if aes_decrypt(xml_buffer:raw(0,5)):raw() == "<?xml" then -- AES encrypted
+        if aes_decrypt(xml_buffer:raw(0,5), pinfo):raw() == "<?xml" then -- AES encrypted
 					local ba = xml_buffer:bytes()
-          local decrypted = aes_decrypt(ba:raw())
+          local decrypted = aes_decrypt(ba:raw(), pinfo)
           body_tvb = decrypted:tvb("Decrypted XML (in Meta Payload)")
           -- Create a tree item that, when clicked, automatically shows the tab we just created
           body:add(body_tvb(), "Decrypted XML (in Meta Payload)")
@@ -369,7 +371,10 @@ local function process_body(header, body_buffer, bc_subtree, pinfo)
           local ba = xml_buffer:bytes()
           local decrypted = xml_decrypt(ba, header.enc_offset)
           local new_noonce = string.match(decrypted:raw(), "[<]nonce[>][ \t\n]*([^ \t\n<]+)[ \t\n]*[<][/]nonce[>]")
-          _G.nonce = new_noonce;
+          local nonce_key = tostring(pinfo.src) .. ":" .. pinfo.src_port
+          _G.nonce[nonce_key] = new_noonce;
+          nonce_key = tostring(pinfo.dst) .. ":" .. pinfo.dst_port
+          _G.nonce[nonce_key] = new_noonce;
           body_tvb = decrypted:tvb("Decrypted XML (in Meta Payload)")
           -- Create a tree item that, when clicked, automatically shows the tab we just created
           body:add(body_tvb(), "Decrypted XML (in Meta Payload)")
@@ -390,9 +395,9 @@ local function process_body(header, body_buffer, bc_subtree, pinfo)
         local body_tvb = binary_buffer:tvb("Main Payload");
         body:add(body_tvb(), "Main Payload")
         if bin_len > 4 then
-          if aes_decrypt(binary_buffer:raw(0,5)):raw() == "<?xml" then -- AES encrypted
+          if aes_decrypt(binary_buffer:raw(0,5), pinfo):raw() == "<?xml" then -- AES encrypted
             local ba = binary_buffer:bytes()
-            local decrypted = aes_decrypt(ba:raw())
+            local decrypted = aes_decrypt(ba:raw(), pinfo)
             body_tvb = decrypted:tvb("Decrypted XML (in Binary Payload)")
             -- Create a tree item that, when clicked, automatically shows the tab we just created
             body:add(body_tvb(), "Decrypted XML (in Binary Payload)")

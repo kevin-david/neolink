@@ -300,7 +300,7 @@ impl Discoverer {
                         }
                     }
                 }
-                Err(Error::DroppedConnection)
+                Err(Error::DiscoveryIgnored)
             } => {v},
             v = async {
                 // Send every inter for ever or until channel is no longer viable

@@ -112,7 +112,7 @@ jobs:
             # build a list of images from tags
             for j in ${IMAGE_TAGS}
             do
-                if [[ "${j}" =~ ^[0-9][.][0-9][.][0-9]$ ]]; then
+                if [[ "${j}" =~ ^[v]?[0-9][.][0-9][.][0-9]$ ]]; then
                   echo "Version tag (${j}) will not be deleted"
                   continue
                 fi

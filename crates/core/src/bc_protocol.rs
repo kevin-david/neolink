@@ -16,6 +16,7 @@ mod abilityinfo;
 mod battery;
 mod connection;
 mod credentials;
+mod email;
 mod errors;
 mod floodlight;
 mod keepalive;
@@ -39,6 +40,7 @@ mod support;
 mod talk;
 mod time;
 mod uid;
+mod users;
 mod version;
 
 pub(crate) use connection::*;

@@ -132,6 +132,15 @@ pub struct BcXml {
     /// For changing rtmp server port
     #[serde(rename = "OnvifPort", skip_serializing_if = "Option::is_none")]
     pub onvif_port: Option<OnvifPort>,
+    /// Email for setting the email notifications
+    #[serde(rename = "Email", skip_serializing_if = "Option::is_none")]
+    pub email: Option<Email>,
+    /// EmailTask for turning the email notifications on/off
+    #[serde(rename = "EmailTask", skip_serializing_if = "Option::is_none")]
+    pub email_task: Option<EmailTask>,
+    /// Read and write users
+    #[serde(rename = "UserList", skip_serializing_if = "Option::is_none")]
+    pub user_list: Option<UserList>,
 }
 
 impl BcXml {
@@ -490,8 +499,9 @@ pub struct TimeBlockList {
 pub struct TimeBlock {
     /// Whether to enable or disable for this time block
     pub enable: u8,
-    /// The day of the week for this block
-    pub weekDay: String,
+    /// The day of the week for this block, Monday, Tuesday, Etc
+    #[serde(rename = "weekDay")]
+    pub week_day: String,
     /// Time to start this block
     #[serde(rename = "beginHour")]
     pub begin_hour: u8,
@@ -930,7 +940,7 @@ pub struct FloodlightTask {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub brightness_min: Option<u32>,
     /// Schedule fot auto floodlight
-    pub schedule: Schedule,
+    pub schedule: ScheduleFloodLight,
     /// Threshold settings for light sensor to consider nightime
     #[serde(rename = "lightSensThreshold")]
     pub light_sens_threshold: LightSensThreshold,
@@ -947,7 +957,7 @@ pub struct FloodlightTask {
 
 /// Schedule for Floodlight Task
 #[derive(PartialEq, Eq, Default, Debug, Deserialize, Serialize)]
-pub struct Schedule {
+pub struct ScheduleFloodLight {
     /// startHour
     #[serde(rename = "startHour")]
     pub start_hour: u32,
@@ -1478,6 +1488,133 @@ pub struct OnvifPort {
     pub enable: Option<u32>,
 }
 
+/// Email settings for notificaitons
+#[derive(PartialEq, Eq, Default, Debug, Deserialize, Serialize, Clone)]
+pub struct Email {
+    /// XML Version
+    #[serde(rename = "@version")]
+    pub version: String,
+    /// SMTP server address
+    #[serde(rename = "smtpServer")]
+    pub smtp_server: String,
+    /// SMTP username
+    #[serde(rename = "userName")]
+    pub user_name: String,
+    /// SMTP password
+    pub password: String,
+    /// Send email address
+    pub address1: String,
+    /// Send email address can be empty
+    pub address2: String,
+    /// Send email address can be empty
+    pub address3: String,
+    /// 465
+    #[serde(rename = "smtpPort")]
+    pub smtp_port: u16,
+    /// Name of recipient to use on the email
+    #[serde(rename = "sendNickname")]
+    pub send_nickname: String,
+    /// Observed value `1`
+    pub attachment: u8,
+    /// Observed value `picture`, `video`
+    #[serde(rename = "attachmentType", skip_serializing_if = "Option::is_none")]
+    pub attachment_type: Option<String>,
+    /// Observed value `withText`
+    #[serde(rename = "textType")]
+    pub text_type: String,
+    /// Observed value `1`
+    pub ssl: u8,
+    /// Observed value `30`
+    pub interval: u32,
+    /// Max length of message. Observed value `127`
+    ///   Read Only
+    #[serde(rename = "senderMaxLen", skip_serializing_if = "Option::is_none")]
+    pub sender_max_len: Option<u32>,
+}
+
+/// EmailTask settings that controls the times/enables the email
+/// notifications
+#[derive(PartialEq, Eq, Default, Debug, Deserialize, Serialize)]
+pub struct EmailTask {
+    /// XML Version
+    #[serde(rename = "@version")]
+    pub version: String,
+    /// Channel number
+    #[serde(rename = "channelId")]
+    pub channel_id: u8,
+    /// 1 for enable 0 for disable
+    #[serde(rename = "enable")]
+    pub enable: u8,
+    /// The list of schedule to turn on/off the email notifications
+    #[serde(rename = "ScheduleList", skip_serializing_if = "Option::is_none")]
+    pub schedule_list: Option<ScheduleList>,
+}
+
+/// List of schedule items for turning on/off the notifications
+#[derive(PartialEq, Eq, Default, Debug, Deserialize, Serialize)]
+pub struct ScheduleList {
+    /// List of schedules
+    #[serde(rename = "Schedule")]
+    pub schedule: Schedule,
+}
+
+/// Schedule item for turning on/off the notifications
+#[derive(PartialEq, Eq, Default, Debug, Deserialize, Serialize)]
+pub struct Schedule {
+    /// The alarm type. Observed values: `MD`
+    #[serde(rename = "alarmType")]
+    pub alarm_type: String,
+    /// The list of time blocks
+    #[serde(rename = "timeBlockList")]
+    pub time_block_list: TimeBlockList,
+}
+
+/// List of users
+#[derive(PartialEq, Eq, Default, Debug, Deserialize, Serialize)]
+pub struct UserList {
+    /// XML Version
+    #[serde(rename = "@version")]
+    pub version: String,
+    /// The actual user-list
+    #[serde(rename = "User", skip_serializing_if = "Option::is_none")]
+    pub user_list: Option<Vec<User>>,
+}
+
+/// A struct for reading and writing camera user records
+#[derive(PartialEq, Eq, Default, Debug, Deserialize, Serialize)]
+pub struct User {
+    /// The user_name is used to identify the user in the API
+    #[serde(rename = "userName")]
+    pub user_name: String,
+    /// The password seems to only be included when creating or modifying a user
+    #[serde(
+        rename = "password",
+        skip_serializing_if = "Option::is_none",
+        skip_deserializing
+    )]
+    pub password: Option<String>,
+    /// The user_id does not seem to have a purpose. It is not included when creating a user.
+    #[serde(rename = "userId", skip_serializing_if = "Option::is_none")]
+    pub user_id: Option<u32>,
+    /// User type, 0 is User and 1 is Administrator
+    #[serde(rename = "userLevel")]
+    pub user_level: u8,
+    /// Unknown, seems to be 1 for the current API user
+    #[serde(rename = "loginState", skip_serializing_if = "Option::is_none")]
+    pub login_state: Option<u8>,
+    /// The user_set_state states what will happen with a user-record. 4 different values have been
+    /// observed: none | add | delete | modify
+    ///
+    /// | Value  | Description                                                                                                        |
+    /// | ---    | ---                                                                                                                |
+    /// | none   | This is the state set when reading Users. When writing this seems to indicate that the user should not be modified |
+    /// | add    | Indicates that a new User should be created                                                                        |
+    /// | delete | Indicates that the user should be removed                                                                          |
+    /// | modify | Indicates that the user should be modified. It seems like only the password can be changed.                        |
+    #[serde(rename = "userSetState")]
+    pub user_set_state: String,
+}
+
 /// Convience function to return the xml version used throughout the library
 pub fn xml_ver() -> String {
     "1.1".to_string()
@@ -1699,18 +1836,17 @@ fn test_deviceinfo_partial_deser() {
 "#
     );
 
-    // Needs to ignore all the other crap that we don't care about
     let b = BcXml::try_parse(sample.as_bytes()).unwrap();
     match b {
         BcXml {
             device_info:
                 Some(DeviceInfo {
                     resolution:
-                        Resolution {
+                        Some(Resolution {
                             width: 3840,
                             height: 2160,
                             ..
-                        },
+                        }),
                     ..
                 }),
             ..

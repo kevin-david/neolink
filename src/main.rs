@@ -40,15 +40,19 @@ mod battery;
 mod cmdline;
 mod common;
 mod config;
+#[cfg(feature = "gstreamer")]
 mod image;
 mod mqtt;
 mod pir;
 mod ptz;
 mod reboot;
+#[cfg(feature = "gstreamer")]
 mod rtsp;
 mod services;
 mod statusled;
+#[cfg(feature = "gstreamer")]
 mod talk;
+mod users;
 mod utils;
 
 use cmdline::{Command, Opt};
@@ -83,6 +87,7 @@ async fn main() -> Result<()> {
     let neo_reactor = NeoReactor::new(config.clone()).await;
 
     match opt.cmd {
+        #[cfg(feature = "gstreamer")]
         None => {
             warn!(
                 "Deprecated command line option. Please use: `neolink rtsp --config={:?}`",
@@ -90,6 +95,16 @@ async fn main() -> Result<()> {
             );
             rtsp::main(rtsp::Opt {}, neo_reactor.clone()).await?;
         }
+        #[cfg(not(feature = "gstreamer"))]
+        None => {
+            // When gstreamer is disabled the default command is MQTT
+            warn!(
+                "Deprecated command line option. Please use: `neolink mqtt --config={:?}`",
+                conf_path
+            );
+            mqtt::main(mqtt::Opt {}, neo_reactor.clone()).await?;
+        }
+        #[cfg(feature = "gstreamer")]
         Some(Command::Rtsp(opts)) => {
             rtsp::main(opts, neo_reactor.clone()).await?;
         }
@@ -105,18 +120,21 @@ async fn main() -> Result<()> {
         Some(Command::Ptz(opts)) => {
             ptz::main(opts, neo_reactor.clone()).await?;
         }
+        #[cfg(feature = "gstreamer")]
         Some(Command::Talk(opts)) => {
             talk::main(opts, neo_reactor.clone()).await?;
         }
         Some(Command::Mqtt(opts)) => {
             mqtt::main(opts, neo_reactor.clone()).await?;
         }
+        #[cfg(feature = "gstreamer")]
         Some(Command::MqttRtsp(opts)) => {
             tokio::select! {
                 v = mqtt::main(opts, neo_reactor.clone()) => v,
                 v = rtsp::main(rtsp::Opt {}, neo_reactor.clone()) => v,
             }?;
         }
+        #[cfg(feature = "gstreamer")]
         Some(Command::Image(opts)) => {
             image::main(opts, neo_reactor.clone()).await?;
         }
@@ -125,6 +143,9 @@ async fn main() -> Result<()> {
         }
         Some(Command::Services(opts)) => {
             services::main(opts, neo_reactor.clone()).await?;
+        }
+        Some(Command::Users(opts)) => {
+            users::main(opts, neo_reactor.clone()).await?;
         }
     }
 

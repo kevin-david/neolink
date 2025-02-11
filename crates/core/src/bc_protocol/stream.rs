@@ -51,17 +51,17 @@ impl StreamData {
             if handle.is_finished() {
                 self.abort_handle.cancel();
                 handle.await??;
-                return Err(Error::DroppedConnection);
+                return Err(Error::StreamFinished);
             }
         } else {
             self.abort_handle.cancel();
-            return Err(Error::DroppedConnection);
+            return Err(Error::StreamFinished);
         }
         match self.rx.recv().await {
             Some(data) => Ok(data),
             None => {
                 self.abort_handle.cancel();
-                Err(Error::DroppedConnection)
+                Err(Error::StreamFinished)
             }
         }
     }

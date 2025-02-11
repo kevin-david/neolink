@@ -54,7 +54,7 @@ When receiving packet these should be used to quickly discard invalid packets.
 Each function in BC has its own message ID. For example login is 1, video data
 is 3, motion detection is 33.
 
-For a more complete list please see the [messages doc](dissector/messages.md)
+For a more complete list please see the [messages doc](messages.md)
 
 #### Message length
 
@@ -146,7 +146,7 @@ extension XML part of the message.
 
 # Login
 
-For message details see the [docs](dissector/messages.md)
+For message details see the [docs](messages.md)
 
 Clients should login by
 
@@ -208,7 +208,7 @@ After which all message bodies of type id 3 are binary.
 The binary represents a stream of data that can be interrupted by packet
 boundaries. Clients should create a buffer and pop bytes for processing when
 complete media packets are received. Media packets descriptions can be found in
-the [docs](dissector/mediapacket.md)
+the [docs](mediapacket.md)
 
 # Other Function
 
@@ -256,7 +256,7 @@ Which contains the plain text of the username of interest and the tokens for
 abilities you want to know about.
 
 Details of expected formats should be found from the
-[docs](dissector/messages.md)
+[docs](messages.md)
 
 #### AES Encryption
 

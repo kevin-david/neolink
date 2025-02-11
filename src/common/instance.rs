@@ -9,16 +9,21 @@ use futures::TryFutureExt;
 use std::sync::{Arc, Weak};
 use tokio::{
     sync::{
-        mpsc::Sender as MpscSender, oneshot::channel as oneshot, watch::channel as watch,
-        watch::Receiver as WatchReceiver,
+        mpsc::Sender as MpscSender, oneshot::channel as oneshot, watch::Receiver as WatchReceiver,
     },
     time::{sleep, Duration},
 };
 use tokio_util::sync::CancellationToken;
 
-use super::{MdState, NeoCamCommand, NeoCamThreadState, Permit, PushNoti, StreamInstance};
+use super::{MdState, NeoCamCommand, NeoCamThreadState, Permit};
 use crate::{config::CameraConfig, AnyResult, Result};
-use neolink_core::bc_protocol::{BcCamera, StreamKind};
+use neolink_core::bc_protocol::BcCamera;
+
+#[cfg(feature = "gstreamer")]
+mod gst;
+
+#[cfg(feature = "pushnoti")]
+mod pushnoti;
 
 /// This instance is the primary interface used throughout the app
 ///
@@ -223,83 +228,6 @@ impl NeoInstance {
                 },
             };
         }
-    }
-
-    pub(crate) async fn stream(&self, name: StreamKind) -> Result<StreamInstance> {
-        let (instance_tx, instance_rx) = oneshot();
-        self.camera_control
-            .send(NeoCamCommand::Stream(name, instance_tx))
-            .await?;
-        Ok(instance_rx.await?)
-    }
-
-    #[allow(dead_code)]
-    pub(crate) async fn low_stream(&self) -> Result<Option<StreamInstance>> {
-        let (instance_tx, instance_rx) = oneshot();
-        self.camera_control
-            .send(NeoCamCommand::LowStream(instance_tx))
-            .await?;
-        Ok(instance_rx.await?)
-    }
-
-    #[allow(dead_code)]
-    pub(crate) async fn high_stream(&self) -> Result<Option<StreamInstance>> {
-        let (instance_tx, instance_rx) = oneshot();
-        self.camera_control
-            .send(NeoCamCommand::HighStream(instance_tx))
-            .await?;
-        Ok(instance_rx.await?)
-    }
-
-    #[allow(dead_code)]
-    pub(crate) async fn streams(&self) -> Result<Vec<StreamInstance>> {
-        let (instance_tx, instance_rx) = oneshot();
-        self.camera_control
-            .send(NeoCamCommand::Streams(instance_tx))
-            .await?;
-        Ok(instance_rx.await?)
-    }
-
-    pub(crate) async fn uid(&self) -> Result<String> {
-        let (reply_tx, reply_rx) = oneshot();
-        self.camera_control
-            .send(NeoCamCommand::GetUid(reply_tx))
-            .await?;
-        Ok(reply_rx.await?)
-    }
-
-    pub(crate) async fn push_notifications(&self) -> Result<WatchReceiver<Option<PushNoti>>> {
-        let uid = self.uid().await?;
-        let (instance_tx, instance_rx) = oneshot();
-        self.camera_control
-            .send(NeoCamCommand::PushNoti(instance_tx))
-            .await?;
-        let mut source_watch = instance_rx.await?;
-
-        let (fwatch_tx, fwatch_rx) = watch(None);
-        tokio::task::spawn(async move {
-            loop {
-                match source_watch
-                    .wait_for(|i| {
-                        fwatch_tx.borrow().as_ref() != i.as_ref()
-                            && i.as_ref()
-                                .is_some_and(|i| i.message.contains(&format!("\"{uid}\"")))
-                    })
-                    .await
-                {
-                    Ok(pn) => {
-                        log::trace!("Forwarding push notification about {}", uid);
-                        let _ = fwatch_tx.send_replace(pn.clone());
-                    }
-                    Err(e) => {
-                        break Err(e);
-                    }
-                }
-            }?;
-            AnyResult::Ok(())
-        });
-
-        Ok(fwatch_rx)
     }
 
     pub(crate) async fn motion(&self) -> Result<WatchReceiver<MdState>> {

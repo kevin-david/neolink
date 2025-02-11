@@ -5,6 +5,7 @@ use gstreamer::{
     parse::launch_full, prelude::*, ClockTime, MessageView, ParseFlags, Pipeline, State,
 };
 use gstreamer_app::AppSrc;
+use neolink_core::bcmedia::model::VideoType;
 use tokio::{
     sync::{
         self,
@@ -14,7 +15,7 @@ use tokio::{
 };
 use tokio_util::sync::CancellationToken;
 
-use crate::{common::VidFormat, AnyResult};
+use crate::AnyResult;
 
 #[derive(Debug)]
 enum GstControl {
@@ -74,7 +75,7 @@ impl Drop for GstSender {
 }
 
 pub(super) async fn from_input<T: AsRef<Path>>(
-    format: VidFormat,
+    format: VideoType,
     out_file: T,
 ) -> Result<GstSender> {
     let pipeline = create_pipeline(format, out_file.as_ref())?;
@@ -171,13 +172,13 @@ fn get_source(pipeline: &Pipeline) -> Result<AppSrc> {
         .map_err(|_| anyhow!("Cannot find appsource in gstreamer, check your gstreamer plugins"))
 }
 
-fn create_pipeline(format: VidFormat, file_path: &Path) -> Result<Pipeline> {
+fn create_pipeline(format: VideoType, file_path: &Path) -> Result<Pipeline> {
     gstreamer::init()
         .context("Unable to start gstreamer ensure it and all plugins are installed")?;
     let file_path = file_path.with_extension("jpeg");
 
     let launch_str = match format {
-        VidFormat::H264 => {
+        VideoType::H264 => {
             format!(
                 "appsrc name=thesource \
                 ! h264parse \
@@ -187,7 +188,7 @@ fn create_pipeline(format: VidFormat, file_path: &Path) -> Result<Pipeline> {
                 file_path.display()
             )
         }
-        VidFormat::H265 => {
+        VideoType::H265 => {
             format!(
                 "appsrc name=thesource \
                 ! h265parse \
@@ -197,7 +198,6 @@ fn create_pipeline(format: VidFormat, file_path: &Path) -> Result<Pipeline> {
                 file_path.display()
             )
         }
-        VidFormat::None => unreachable!(),
     };
 
     log::info!("{}", launch_str);

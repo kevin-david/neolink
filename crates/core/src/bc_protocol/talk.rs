@@ -410,7 +410,8 @@ impl BcCamera {
         // Chunks are still being played, while talk_stop will interrupt them. Wait until we expect
         // the stream to end (+ and extra 100ms) before issuing talk_stop.
         let remaining_stream_duration = expected_stream_end - std::time::Instant::now();
-        std::thread::sleep(remaining_stream_duration + std::time::Duration::from_secs_f32(0.1));
+        tokio::time::sleep(remaining_stream_duration + std::time::Duration::from_secs_f32(0.1))
+            .await;
 
         self.talk_stop().await?;
 

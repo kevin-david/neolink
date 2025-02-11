@@ -20,9 +20,9 @@ pub struct BcStream<'a> {
     rx: &'a mut ReceiverStream<Result<Bc>>,
 }
 
-impl<'a> Unpin for BcStream<'a> {}
+impl Unpin for BcStream<'_> {}
 
-impl<'a> Stream for BcStream<'a> {
+impl Stream for BcStream<'_> {
     type Item = Result<Bc>;
 
     fn poll_next(mut self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Option<Result<Bc>>> {

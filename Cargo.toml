@@ -1,7 +1,7 @@
 [package]
 name = "neolink"
 description = "A standards-compliant bridge to Reolink IP cameras"
-version = "0.6.3-rc.2"
+version = "0.6.3-rc.3"
 authors = ["George Hilliard <thirtythreeforty@gmail.com>", "Andrew King <sheepchaan@gmail.com>"]
 edition = "2018"
 license = "AGPL-3.0-or-later"
@@ -13,26 +13,25 @@ members = [
 
 [dependencies]
 anyhow = "1.0.70"
-async-stream = "0.3.5"
 base64 = "0.22.0"
-byte-slice-cast = "1.2.2"
+byte-slice-cast = {version = "1.2.2", optional = true}
 bytes = "1.6.0"
 clap = { version = "4.2.2", features = ["derive", "cargo"] }
-crossbeam-channel = "0.5.8"
-dirs = "5.0.1"
+crossbeam-channel = {version = "0.5.8", optional = true}
+dirs = {version = "5.0.1", optional = true}
 env_logger = "0.11.3"
-fcm-push-listener = "2.0.3"
+fcm-push-listener = {version = "2.0.3", optional = true}
 futures = "0.3.28"
-gstreamer = "0.22.3"
-gstreamer-app = { version = "0.22.0", features = ["v1_20"] }
-gstreamer-rtsp = { version = "0.22.0", features = ["v1_20"] }
-gstreamer-rtsp-server = { version = "0.22.0", features = ["v1_20"] }
+gstreamer = {version = "0.23.0", optional = true}
+gstreamer-app = { version = "0.23.0", features = ["v1_20"], optional = true }
+gstreamer-rtsp = { version = "0.23.0", features = ["v1_20"], optional = true }
+gstreamer-rtsp-server = { version = "0.23.0", features = ["v1_20"], optional = true }
 heck = "0.5.0"
 log = { version = "0.4.17", features = [ "release_max_level_debug" ] }
-md5 = "0.7.0"
-neolink_core = { path = "crates/core", version = "0.6.3-rc.2" }
+md5 = {version = "0.7.0", optional = true}
+neolink_core = { path = "crates/core", version = "0.6.3-rc.3" }
 once_cell = "1.19.0"
-quick-xml = { version = "0.31.0", features = ["serialize"] }
+quick-xml = { version = "0.36.1", features = ["serialize"] }
 regex = "1.7.3"
 rumqttc = "0.24.0"
 serde = { version = "1.0.160", features = ["derive"] }
@@ -42,8 +41,23 @@ tokio-stream = "0.1.12"
 tokio-util = { version = "0.7.7", features = ["full", "tracing"] }
 toml = "0.8.2"
 uuid = { version = "1.8.0", features = ["v4"] }
-validator = "0.17.0"
-validator_derive = "0.17.0"
+validator = {version="0.18.1", features = ["derive"] }
 
 [target.'cfg(not(target_env = "msvc"))'.dependencies]
 tikv-jemallocator = "0.5"
+
+[features]
+default = ["gstreamer"]
+gstreamer = [
+  "dep:gstreamer",
+  "dep:gstreamer-app",
+  "dep:gstreamer-rtsp",
+  "dep:gstreamer-rtsp-server",
+  "dep:byte-slice-cast",
+  "dep:crossbeam-channel"
+]
+pushnoti = [
+  "dep:fcm-push-listener",
+  "dep:dirs",
+  "dep:md5"
+]

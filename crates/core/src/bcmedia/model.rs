@@ -108,7 +108,7 @@ pub(super) const MAGIC_HEADER_BCMEDIA_IFRAME: u32 = 0x63643030;
 pub(super) const MAGIC_HEADER_BCMEDIA_IFRAME_LAST: u32 = 0x63643039;
 
 /// Video Types for I/PFrame
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Copy)]
 pub enum VideoType {
     /// H264 video data
     H264,
@@ -205,6 +205,50 @@ pub struct BcMediaAac {
     pub data: Vec<u8>,
 }
 
+impl BcMediaAac {
+    /// Read the ADTS header to learn the duration in micro secs
+    pub fn duration(&self) -> Option<u32> {
+        if self.data.len() < 8 {
+            // Too small for the header
+            return None;
+        }
+        if self.data[0] != 0b11111111 {
+            // Syncword incorrect
+            return None;
+        }
+        if (self.data[1] & 0b11110000) != 0b11110000 {
+            // Syncword incorrect
+            return None;
+        }
+        let frequency_index = (self.data[2] & 0b00111100) >> 2;
+        let sample_frequency = match frequency_index {
+            0 => Some(96000u32),
+            1 => Some(88200u32),
+            2 => Some(64000u32),
+            3 => Some(48000u32),
+            4 => Some(44100u32),
+            5 => Some(32000u32),
+            6 => Some(24000u32),
+            7 => Some(22050u32),
+            8 => Some(16000u32),
+            9 => Some(12000u32),
+            10 => Some(11025u32),
+            11 => Some(8000u32),
+            12 => Some(7350u32),
+            _ => None,
+        }?;
+        log::trace!("sample_frequency: {sample_frequency}");
+
+        let frames = (self.data[6] & 0b00000011) + 1;
+        log::trace!("frames: {frames}");
+        let samples = frames as u32 * 1024;
+        log::trace!("samples: {samples}");
+        const MICROSECONDS: u32 = 1000000;
+        let duration = samples * MICROSECONDS / sample_frequency;
+        Some(duration)
+    }
+}
+
 pub(super) const MAGIC_HEADER_BCMEDIA_ADPCM: u32 = 0x62773130;
 
 pub(super) const MAGIC_HEADER_BCMEDIA_ADPCM_DATA: u16 = 0x0100;
@@ -230,4 +274,21 @@ pub struct BcMediaAdpcm {
     ///
     /// To calculate the block-align size simply remove 4 from the `len()`
     pub data: Vec<u8>,
+}
+
+impl BcMediaAdpcm {
+    /// The block size, this is bytes without the block header
+    pub fn block_size(&self) -> u32 {
+        self.data.len() as u32 - 4
+    }
+
+    /// Returns duration in micro seconds;
+    pub fn duration(&self) -> Option<u32> {
+        let samples = self.block_size() * 2;
+        // Always 8000Hz for ADPCM
+        const SAMPLE_FREQUENCY: u32 = 8000;
+        const MICROSECONDS: u32 = 1000000;
+        let duration = samples * MICROSECONDS / SAMPLE_FREQUENCY;
+        Some(duration)
+    }
 }

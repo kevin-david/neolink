@@ -90,10 +90,8 @@ fn bc_modern_msg<'a>(
         E::add_context(input, ctx, E::from_error_kind(input, kind))
     }
 
-    let ext_len = match header.payload_offset {
-        Some(off) => off,
-        _ => 0, // If missing payload_offset treat all as payload
-    };
+    // If missing payload_offset treat all as payload
+    let ext_len = header.payload_offset.unwrap_or_default();
 
     let (buf, ext_buf) = take(ext_len)(buf)?;
     let payload_len = header.body_len - ext_len;

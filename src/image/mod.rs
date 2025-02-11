@@ -17,17 +17,19 @@
 /// neolink image --config=config.toml --use_stream --file-path=filepath CameraName
 /// ```
 ///
-use anyhow::{Context, Result};
-use futures::stream::StreamExt;
+use anyhow::{anyhow, Result};
 use log::*;
-use neolink_core::bc_protocol::*;
-use tokio::{fs::File, io::AsyncWriteExt};
-use tokio_stream::wrappers::BroadcastStream;
+use neolink_core::{
+    bc_protocol::*,
+    bcmedia::model::{BcMedia, BcMediaIframe, BcMediaPframe},
+};
+use std::sync::Arc;
+use tokio::{fs::File, io::AsyncWriteExt, sync::RwLock};
 
 mod cmdline;
 mod gst;
 
-use crate::common::{NeoReactor, StampedData};
+use crate::common::NeoReactor;
 pub(crate) use cmdline::Opt;
 
 /// Entry point for the image subcommand
@@ -37,48 +39,65 @@ pub(crate) async fn main(opt: Opt, reactor: NeoReactor) -> Result<()> {
     let camera = reactor.get(&opt.camera).await?;
 
     if opt.use_stream {
-        let stream_data = camera
-            .stream(StreamKind::Main)
-            .await
-            .context("Failed to start video")?;
+        let (stream_data_tx, mut stream_data_rx) = tokio::sync::mpsc::channel(100);
 
-        // Get one iframe at the start while also getting the the video type
-        let mut stream_config = stream_data.config.clone();
-        let vid_type = stream_config
-            .wait_for(|config| config.vid_ready())
-            .await?
-            .vid_format;
-        let mut stream = BroadcastStream::new(stream_data.vid.resubscribe())
-            .filter(|f| futures::future::ready(f.is_ok())); // Filter to ignore lagged
-        let buf = loop {
-            if let Some(Ok(StampedData {
-                data,
-                ts: _,
-                keyframe,
-            })) = stream.next().await
-            {
-                if keyframe {
-                    break data;
-                }
-            }
-        };
+        // Spawn a video stream
+        let thread_camera = camera.clone();
+        let (stream_type_tx, stream_type_rx) = tokio::sync::oneshot::channel();
+        let stream_type_tx = Arc::new(RwLock::new(Some(stream_type_tx)));
+        tokio::task::spawn(async move {
+            thread_camera
+                .run_task(|cam| {
+                    let stream_type_tx = stream_type_tx.clone();
+                    let stream_data_tx = stream_data_tx.clone();
+
+                    Box::pin(async move {
+                        let mut stream = cam.start_video(StreamKind::Main, 100, false).await?;
+                        while let Ok(frame) = stream.get_data().await {
+                            let frame = frame?;
+                            match frame {
+                                BcMedia::Iframe(BcMediaIframe {
+                                    data, video_type, ..
+                                })
+                                | BcMedia::Pframe(BcMediaPframe {
+                                    data, video_type, ..
+                                }) => {
+                                    if let Some(stream_type_tx) =
+                                        stream_type_tx.write().await.take()
+                                    {
+                                        let _ = stream_type_tx.send(video_type);
+                                    }
+                                    stream_data_tx.send(Arc::new(data)).await?;
+                                }
+                                _ => {}
+                            }
+                        }
+                        Result::Ok(())
+                    })
+                })
+                .await
+        });
+
+        let vid_type = stream_type_rx.await?;
+        let buf = stream_data_rx
+            .recv()
+            .await
+            .ok_or(anyhow!("No frames recieved"))?;
 
         let mut sender = gst::from_input(vid_type, &opt.file_path).await?;
         sender.send(buf).await?; // Send first iframe
 
         // Keep sending both IFrame or PFrame until finished
         while sender.is_finished().await.is_none() {
-            let buf = match stream.next().await {
-                Some(Ok(StampedData { data, .. })) => data,
-                _ => {
-                    continue;
+            if let Some(buf) = stream_data_rx.recv().await {
+                debug!("Sending frame data to gstreamer");
+                if sender.send(buf).await.is_err() {
+                    // Assume that the sender is closed
+                    // because the pipeline is finished
+                    break;
                 }
-            };
-
-            debug!("Sending frame data to gstreamer");
-            if sender.send(buf).await.is_err() {
-                // Assume that the sender is closed
-                // because the pipeline is finished
+            } else {
+                log::error!("Camera stopped sending frames before decoding could complete");
                 break;
             }
         }

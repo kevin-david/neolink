@@ -214,7 +214,7 @@ impl ToSocketAddrsOrUid for SocketAddrV6 {
     }
 }
 
-impl<'a> ToSocketAddrsOrUid for &'a [SocketAddr] {
+impl ToSocketAddrsOrUid for &'_ [SocketAddr] {
     type UidIter = std::vec::IntoIter<SocketAddrOrUid>;
 
     fn to_socket_addrs_or_uid(&self) -> Result<Self::UidIter, Error> {

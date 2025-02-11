@@ -5,6 +5,8 @@ use std::{
     collections::{hash_map::Entry, HashMap},
     sync::Arc,
 };
+#[cfg(feature = "pushnoti")]
+use tokio::time::{sleep, Duration};
 use tokio::{
     sync::{
         mpsc::{channel as mpsc, Sender as MpscSender},
@@ -12,12 +14,13 @@ use tokio::{
         watch::{channel as watch, Receiver as WatchReceiver},
     },
     task::JoinSet,
-    time::{sleep, Duration},
 };
 use tokio_util::sync::CancellationToken;
 
 use super::{NeoCam, NeoInstance};
-use crate::{common::PushNotiThread, config::Config, AnyResult, Result};
+#[cfg(feature = "pushnoti")]
+use crate::common::PushNotiThread;
+use crate::{config::Config, AnyResult, Result};
 
 #[allow(clippy::large_enum_variant)]
 enum NeoReactorCommand {
@@ -38,7 +41,9 @@ pub(crate) struct NeoReactor {
 impl NeoReactor {
     pub(crate) async fn new(config: Config) -> Self {
         let (commad_tx, mut command_rx) = mpsc(100);
+        #[cfg(feature = "pushnoti")]
         let (push_noti, mut pn_rx) = mpsc(10);
+        #[cfg(feature = "pushnoti")]
         let pn_tx = push_noti.clone();
         let cancel = CancellationToken::new();
         let (config_tx, _) = watch(config);
@@ -73,7 +78,10 @@ impl NeoReactor {
                                     Entry::Vacant(vac) => {
                                         let current_config: Config = (*thread_config_tx.borrow()).clone();
                                         if let Some(config) = current_config.cameras.iter().find(|cam| cam.name == name).cloned() {
+                                            #[cfg(feature = "pushnoti")]
                                             let cam = NeoCam::new(config, push_noti.clone()).await?;
+                                            #[cfg(not(feature = "pushnoti"))]
+                                            let cam = NeoCam::new(config).await?;
                                             Result::Ok(Some(
                                                 vac.insert(
                                                     cam,
@@ -113,31 +121,34 @@ impl NeoReactor {
         });
 
         // Push notification client
-        let cancel1 = cancel.clone();
-        let mut thread_config_rx = config_tx.subscribe();
-        set.spawn(async move {
-            let r = tokio::select! {
-                _ = cancel1.cancelled() => AnyResult::Ok(()),
-                v = async {
+        #[cfg(feature = "pushnoti")]
+        {
+            let cancel1 = cancel.clone();
+            let mut thread_config_rx = config_tx.subscribe();
+            set.spawn(async move {
+                let r = tokio::select! {
+                    _ = cancel1.cancelled() => AnyResult::Ok(()),
+                    v = async {
 
-                    let mut pn = PushNotiThread::new().await?;
-                    loop {
-                        thread_config_rx.wait_for(|c| c.cameras.iter().any(|cam| cam.push_notifications)).await?; // Wait until PN are enabled
-                        let r = tokio::select!{
-                            v = pn.run(&pn_tx, &mut pn_rx) => {v},
-                            _ = thread_config_rx.wait_for(|c| c.cameras.iter().all(|cam| !cam.push_notifications)) => AnyResult::Ok(()), // Quit if PN is turned off
-                        };
-                        if r.is_err() {
-                            log::debug!("Issue with push notifier: {r:?}");
-                            sleep(Duration::from_secs(5)).await;
-                        } else {
-                            log::debug!("Push notifier reported normal shutdown. Restarting");
+                        let mut pn = PushNotiThread::new().await?;
+                        loop {
+                            thread_config_rx.wait_for(|c| c.cameras.iter().any(|cam| cam.push_notifications)).await?; // Wait until PN are enabled
+                            let r = tokio::select!{
+                                v = pn.run(&pn_tx, &mut pn_rx) => {v},
+                                _ = thread_config_rx.wait_for(|c| c.cameras.iter().all(|cam| !cam.push_notifications)) => AnyResult::Ok(()), // Quit if PN is turned off
+                            };
+                            if r.is_err() {
+                                log::debug!("Issue with push notifier: {r:?}");
+                                sleep(Duration::from_secs(5)).await;
+                            } else {
+                                log::debug!("Push notifier reported normal shutdown. Restarting");
+                            }
                         }
-                    }
-                } => v,
-            };
-            r
-        });
+                    } => v,
+                };
+                r
+            });
+        }
 
         Self {
             cancel,

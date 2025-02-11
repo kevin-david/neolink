@@ -72,6 +72,38 @@ pub enum Error {
     #[error("Dropped connection (Broadcast TryRecv)")]
     BroadcastDroppedConnectionTry(#[from] tokio::sync::broadcast::error::TryRecvError),
 
+    /// Raised when a stream thread has finished
+    #[error("End of Stream")]
+    StreamFinished,
+
+    /// Raised when a connection requests shutdown
+    #[error("Connection shuting down")]
+    ConnectionShutdown,
+
+    /// Raised when a discovery attempt fails to get a reply
+    #[error("No reply to discovery packet")]
+    DiscoveryIgnored,
+
+    /// Raised when there is no reply to a UDP packet
+    #[error("BcUDP packet timeout")]
+    BcUdpTimeout,
+
+    /// Raised when a BcUdp incomming connection is dropped
+    #[error("BcUDP reciver dropped: {0:?}")]
+    BcUdpDropReciver(BcUdpDropReciverKind),
+
+    /// Raised when a BcUdp outgoing connection is dropped
+    #[error("BcUDP sender dropped")]
+    BcUdpDropSender,
+
+    /// Raised when a BcUdp outgoing connection is dropped
+    #[error("BcUDPPayload inner protocol was dropped")]
+    BcUdpPayloadDroppedInner,
+
+    /// Raised when BcUdp sender fails to reconnect in time
+    #[error("BcUDP reconnect timeout")]
+    BcUdpReconnectTimeout,
+
     /// Raised when a connection is dropped during a TryRecv event
     #[error("Send Error")]
     TokioBcSendError,
@@ -202,6 +234,12 @@ pub enum Error {
     /// A generic catch all error
     #[error("Other error: {0}")]
     OtherString(String),
+}
+
+#[derive(Debug, Clone)]
+pub enum BcUdpDropReciverKind {
+    NoneRecieved,
+    SendFailed(String),
 }
 
 impl From<std::io::Error> for Error {

@@ -396,7 +396,7 @@ impl Poller {
                     };
                 }
                 PollCommand::Disconnect => {
-                    return Err(Error::DroppedConnection);
+                    return Err(Error::ConnectionShutdown);
                 }
             }
         }

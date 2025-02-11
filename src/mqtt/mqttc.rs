@@ -339,7 +339,7 @@ impl<'a> MqttBackend<'a> {
     }
 }
 
-impl<'a> Drop for MqttBackend<'a> {
+impl Drop for MqttBackend<'_> {
     fn drop(&mut self) {
         self.cancel.cancel();
     }
